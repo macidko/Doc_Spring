@@ -1,5 +1,21 @@
 ## İçindekiler
 - [Proje İncelemesi ve Açıklamalar](#proje-incelemesi-ve-açıklamalar)
+  - [User Entity](#user-entity)
+    - [Açıklama](#açıklamalar)
+  - [Product Entity](#product-entity)
+    - [Açıklama](#açıklamalar-1)
+  - [Category Entity](#category-entity)
+    - [Açıklama](#açıklamalar-2)
+  - [Product Repository](#productrepository)
+    - [Açıklama](#açıklamalar-3)
+    - [Detay](#product-repository-detay)
+  - [User Repository](#userrepository)
+    - [Açıklama](#açıklamalar-4)
+    - [Detay](#userrepository-detay)
+  - [Product Service ve Product Service Implementation](#productservice-ve-productserviceimpl)
+    - [Açıklama](#açıklamalar-5)
+    - [Product Service Detay](#productservice-detay)
+    - [Product Service Impl Detay](#productserviceimpl-detay)
 - [Lombok](#lombok)
 - [MapStruct](#mapstruct)
 - [Spring IoC (Inversion of Control)](#spring-ioc-inversion-of-control)
@@ -262,78 +278,33 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 2. `findByEmailIgnoreCase(String email)`: Kullanıcı e-postasını büyük/küçük harf duyarlılığı olmadan arayan metod.
 
 #### UserRepository Detay
-Tabii ki! Aşağıda `ProductRepository` arayüzündeki her bir satırı detaylı bir şekilde açıklayacağım. Bu arayüz, Spring Data JPA kullanarak `Product` nesneleri ile veritabanı işlemleri gerçekleştirmek için gereken metodları tanımlar.
-
-### ProductRepository Arayüzü
-
 ```java
-public interface ProductRepository extends JpaRepository<Product, Integer> {
+public interface UserRepository extends JpaRepository<User, Integer> {
 ```
 
-- **public interface ProductRepository**: `ProductRepository` adında bir arayüz tanımlar. `public` erişim belirleyicisi, bu arayüzün diğer paketlerden de erişilebileceğini belirtir.
-- **extends JpaRepository<Product, Integer>**: Bu arayüz, Spring Data JPA'nın sağladığı `JpaRepository` arayüzünden türetilmiştir. Bu, `Product` nesneleri için temel CRUD (Create, Read, Update, Delete) işlemlerini sağlar. `Integer` tipi, `Product` nesnesinin birincil anahtarının veri türüdür.
+- **public interface UserRepository**: `UserRepository` adında bir arayüz tanımlar. `public` erişim belirleyicisi, bu arayüzün diğer paketlerden de erişilebileceğini belirtir. Bu arayüz, kullanıcı ile ilgili veritabanı işlemlerini gerçekleştirmek için kullanılan bir yapı sağlar.
+- **extends JpaRepository<User, Integer>**:
+  - `JpaRepository<User, Integer>`: Spring Data JPA'nın sağladığı bir arayüzdür. `JpaRepository`, temel CRUD (Create, Read, Update, Delete) işlemleri için gerekli metodları otomatik olarak sağlar.
+  - `User`: Bu repository'nin yönetiminde bulunan varlık sınıfıdır.
+  - `Integer`: `User` varlığının birincil anahtarının veri türüdür. Bu durumda kullanıcı ID'si `Integer` türünde olacak.
 
-### 1. findByNameLikeIgnoreCase Metodu
-
-```java
-  List<Product> findByNameLikeIgnoreCase(String name);
-```
-
-- **List<Product> findByNameLikeIgnoreCase(String name)**: Bu metod, ürün adının belirtilen `name` ile eşleşenlerini arar ve döner.
-  - **List<Product>**: Bu metod, eşleşen ürünlerin bir listesini döner.
-  - **findByNameLikeIgnoreCase**: Method adı, Spring Data JPA'nın sorgu oluşturma yeteneğinden yararlanır. `Like` ifadesi, SQL'deki `LIKE` anahtar kelimesine karşılık gelir ve büyük/küçük harf duyarlılığı olmaksızın arama yapar.
-  - **String name**: Ürün adını aramak için kullanılan parametredir.
-
-### 2. findByNameIgnoreCase Metodu
+### 1. findByEmailIgnoreCase Metodu
 
 ```java
-  Optional<Product> findByNameIgnoreCase(String name);
+  Optional<User> findByEmailIgnoreCase(String email);
 ```
 
-- **Optional<Product> findByNameIgnoreCase(String name)**: Bu metod, belirtilen `name` ile tam olarak eşleşen bir ürünü arar ve döner.
-  - **Optional<Product>**: Bu metod, ürün bulunduğunda bir `Product` nesnesi döner; eğer ürün bulunamazsa, `Optional.empty()` döner. Bu, null kontrolü yapmadan güvenli bir şekilde ürünün var olup olmadığını kontrol etmeyi sağlar.
-  - **findByNameIgnoreCase**: Method adı, büyük/küçük harf duyarlılığı olmaksızın tam eşleşme araması yapar.
-  - **String name**: Ürün adını aramak için kullanılan parametredir.
-
-### 3. findByNameAndUnitPriceGreaterThan Metodu
-
-```java
-  @Query(value = "Select p from Product p " +
-          "inner join p.category " +
-          "where p.unitPrice > :unitPrice and lower(p.name) like concat('%', lower(:name), '%')", nativeQuery=false)
-  List<Product> findByNameAndUnitPriceGreaterThan(String name, BigDecimal unitPrice);
-```
-
-- **@Query**: Bu anotasyon, metodun özel bir JPQL (Java Persistence Query Language) sorgusu kullanarak çalışacağını belirtir.
-- **value = "Select p from Product p ...**: JPQL sorgusu.
-  - `inner join p.category`: Ürünlerin kategorileri ile ilişkili olduğunu belirtir.
-  - `where p.unitPrice > :unitPrice`: Belirtilen `unitPrice` değerinden büyük olan ürünleri bulur.
-  - `lower(p.name) like concat('%', lower(:name), '%')`: Ürün adının belirli bir isimle eşleşip eşleşmediğini kontrol eder, büyük/küçük harf duyarlılığı olmadan.
-  - `:unitPrice` ve `:name`: Metod parametreleri ile bağlanır.
-- **List<Product>**: Bu metod, sorguya uyan ürünlerin bir listesini döner.
-
-### 4. findByNameAndUnitPriceGreaterThanSql Metodu
-
-```java
-  @Query(value = "Select * from products p where p.price > :unitPrice and lower(p.name) LIKE concat('%', lower(:name), '%')", nativeQuery=true)
-  List<Product> findByNameAndUnitPriceGreaterThanSql(String name, BigDecimal unitPrice);
-```
-
-- **@Query**: Bu anotasyon, metodun özel bir SQL sorgusu kullanarak çalışacağını belirtir.
-- **value = "Select * from products p ...**: Native SQL sorgusu.
-  - `where p.price > :unitPrice`: Belirtilen `unitPrice` değerinden büyük olan ürünleri bulur.
-  - `lower(p.name) LIKE concat('%', lower(:name), '%')`: Ürün adının belirli bir isimle eşleşip eşleşmediğini kontrol eder, büyük/küçük harf duyarlılığı olmadan.
-- **nativeQuery=true**: Bu sorgunun native SQL olduğunu belirtir.
-- **List<Product>**: Bu metod, sorguya uyan ürünlerin bir listesini döner.
+- **Optional<User> findByEmailIgnoreCase(String email)**: Bu metod, belirtilen `email` ile eşleşen bir kullanıcıyı arar.
+  - **Optional<User>**: Bu metod, kullanıcı bulunduğunda bir `User` nesnesi döner; eğer kullanıcı bulunamazsa, `Optional.empty()` döner. Bu, null kontrolü yapmadan güvenli bir şekilde kullanıcı nesnesinin var olup olmadığını kontrol etmeyi sağlar.
+  - **findByEmailIgnoreCase**: Metod adı, Spring Data JPA'nın sorgu oluşturma yeteneğinden yararlanarak, kullanıcı e-postasını büyük/küçük harf duyarlılığı olmadan aramak için kullanılır. Burada "findBy" ifadesi, "email" alanına göre sorgulama yapılacağını belirtir. "IgnoreCase" ise, büyük/küçük harf duyarsız bir eşleşme sağlamak için kullanılır.
+  - **String email**: Arama yapmak için kullanılan parametredir. Bu parametre, veritabanındaki kullanıcıların e-posta adreslerini karşılaştırmak için kullanılır.
 
 ### Özet
 
-`ProductRepository`, `Product` varlığı ile ilgili veritabanı işlemlerini gerçekleştirmek için gereken metodları tanımlar. İçinde:
-- Ürün adını büyük/küçük harf duyarlılığı olmadan arama yapan ve döndüren metodlar.
-- Ürün adını ve fiyatı kullanarak ürünleri sorgulayan özel JPQL ve native SQL sorguları ile veritabanında arama yapan metodlar bulunur.
+`UserRepository`, `User` varlığı ile ilgili veritabanı işlemlerini gerçekleştirmek için gerekli metodları tanımlar. İçinde:
+- Kullanıcı e-postasına göre kullanıcıyı arayan ve döndüren bir metod bulunur. Bu metod, büyük/küçük harf duyarlılığı olmadan çalışır ve kullanıcı nesnesini güvenli bir şekilde döndürür.
 
-Bu arayüz, uygulamanın veri erişim katmanında önemli bir rol oynar ve ürünlerle ilgili veritabanı işlemlerini kolaylaştırır.
-
+Bu arayüz, uygulamanın veri erişim katmanında önemli bir rol oynar ve kullanıcılarla ilgili veritabanı işlemlerini kolaylaştırır.
 ### ProductService ve ProductServiceImpl
 
 ```java
@@ -470,7 +441,7 @@ public interface ProductService {
 
 Bu arayüzü implement eden sınıflar, bu metodların nasıl çalışacağını tanımlamakla sorumludur.
 
-#### ProductImpl Detay
+#### ProductServiceImpl Detay
 ```java
 @Service
 @RequiredArgsConstructor
