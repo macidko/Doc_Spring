@@ -1,4 +1,5 @@
 ## İçindekiler
+- [Proje İncelemesi ve Açıklamalar](#proje-incelemesi-ve-açıklamalar)
 - [Lombok](#lombok)
 - [MapStruct](#mapstruct)
 - [Spring IoC (Inversion of Control)](#spring-ioc-inversion-of-control)
@@ -16,6 +17,657 @@
 - [MicroService](#microservice)
 - [Monolith vs MicroService](#monolith-vs-microservice)
 - [SQL](#sql)
+
+---
+
+## Proje İncelemesi ve Açıklamalar
+
+### 1. Projenin Genel Akışı
+
+Bu projede, kullanıcı ve ürün yönetimi işlemleri Spring Boot ve çeşitli kütüphaneler kullanılarak gerçekleştirilmiştir. Kullanıcılar ve ürünlerle ilgili CRUD işlemleri yapılmaktadır. Projede JWT (JSON Web Token) kullanılarak kimlik doğrulama, Redis kullanılarak önbellekleme, MapStruct kullanılarak nesne dönüştürme ve Spring Security ile güvenlik sağlanmaktadır. Ayrıca, özel hata yönetimi ve doğrulama mekanizmaları da yer almaktadır.
+
+### 2. Kod Açıklamaları
+Tabii ki, kodların her bir satırını detaylı bir şekilde açıklayacağım. Daha önce yapılan açıklamalara ek olarak, kod satırlarını da anlamanıza yardımcı olacak şekilde adım adım açıklamalar ekleyelim.
+
+### User Entity
+
+```java
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name="users")
+public class User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name="id")
+  private Long id;
+
+  @Column(name="email")
+  private String email;
+
+  @Column(name="password")
+  private String password;
+
+  @Column(name="name")
+  private String name;
+
+  @Column(name="surname")
+  private String surname;
+
+  @Column(name="identityno")
+  private String identityNo;
+}
+```
+
+#### Açıklamalar
+
+1. `@Getter`: Lombok tarafından bu sınıftaki tüm alanlar için getter metodları oluşturulur.
+2. `@Setter`: Lombok tarafından bu sınıftaki tüm alanlar için setter metodları oluşturulur.
+3. `@AllArgsConstructor`: Tüm alanları parametre olarak alan bir constructor oluşturur.
+4. `@NoArgsConstructor`: Parametresiz bir constructor oluşturur.
+5. `@Entity`: Bu sınıfın bir JPA entity (varlık) sınıfı olduğunu belirtir.
+6. `@Table(name="users")`: Bu varlığın veritabanındaki `users` tablosuna karşılık geldiğini belirtir.
+7. `@Id`: Bu alanın birincil anahtar olduğunu belirtir.
+8. `@GeneratedValue(strategy = GenerationType.IDENTITY)`: Birincil anahtarın otomatik olarak veritabanı tarafından oluşturulacağını belirtir.
+9. `@Column(name="id")`: `id` alanının veritabanındaki `id` sütununa karşılık geldiğini belirtir.
+10. `@Column(name="email")`: `email` alanının veritabanındaki `email` sütununa karşılık geldiğini belirtir.
+11. `@Column(name="password")`: `password` alanının veritabanındaki `password` sütununa karşılık geldiğini belirtir.
+12. `@Column(name="name")`: `name` alanının veritabanındaki `name` sütununa karşılık geldiğini belirtir.
+13. `@Column(name="surname")`: `surname` alanının veritabanındaki `surname` sütununa karşılık geldiğini belirtir.
+14. `@Column(name="identityno")`: `identityNo` alanının veritabanındaki `identityno` sütununa karşılık geldiğini belirtir.
+
+### Product Entity
+
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="products")
+public class Product {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name="id")
+  private int id;
+
+  @Column(name="name")
+  private String name;
+
+  @Column(name="price")
+  private BigDecimal unitPrice;
+
+  @Column(name="stock")
+  private int unitsInStock;
+
+  @ManyToOne
+  @JoinColumn(name="categoryid")
+  private Category category;
+}
+```
+
+#### Açıklamalar
+
+1. `@Getter`: Lombok tarafından bu sınıftaki tüm alanlar için getter metodları oluşturulur.
+2. `@Setter`: Lombok tarafından bu sınıftaki tüm alanlar için setter metodları oluşturulur.
+3. `@NoArgsConstructor`: Parametresiz bir constructor oluşturur.
+4. `@AllArgsConstructor`: Tüm alanları parametre olarak alan bir constructor oluşturur.
+5. `@Entity`: Bu sınıfın bir JPA entity (varlık) sınıfı olduğunu belirtir.
+6. `@Table(name="products")`: Bu varlığın veritabanındaki `products` tablosuna karşılık geldiğini belirtir.
+7. `@Id`: Bu alanın birincil anahtar olduğunu belirtir.
+8. `@GeneratedValue(strategy = GenerationType.IDENTITY)`: Birincil anahtarın otomatik olarak veritabanı tarafından oluşturulacağını belirtir.
+9. `@Column(name="id")`: `id` alanının veritabanındaki `id` sütununa karşılık geldiğini belirtir.
+10. `@Column(name="name")`: `name` alanının veritabanındaki `name` sütununa karşılık geldiğini belirtir.
+11. `@Column(name="price")`: `unitPrice` alanının veritabanındaki `price` sütununa karşılık geldiğini belirtir.
+12. `@Column(name="stock")`: `unitsInStock` alanının veritabanındaki `stock` sütununa karşılık geldiğini belirtir.
+13. `@ManyToOne`: Bu alanın birçok ürünün tek bir kategoriye ait olduğunu belirtir.
+14. `@JoinColumn(name="categoryid")`: Bu alanın `categoryid` sütunu ile ilişkili olduğunu belirtir.
+
+### Category Entity
+
+```java
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name="categories")
+@Entity
+public class Category {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name="id")
+  private int id;
+
+  @Column(name="name")
+  private String name;
+
+  @OneToMany(mappedBy = "category")
+  private List<Product> products;
+}
+```
+
+#### Açıklamalar
+
+1. `@Getter`: Lombok tarafından bu sınıftaki tüm alanlar için getter metodları oluşturulur.
+2. `@Setter`: Lombok tarafından bu sınıftaki tüm alanlar için setter metodları oluşturulur.
+3. `@AllArgsConstructor`: Tüm alanları parametre olarak alan bir constructor oluşturur.
+4. `@NoArgsConstructor`: Parametresiz bir constructor oluşturur.
+5. `@Entity`: Bu sınıfın bir JPA entity (varlık) sınıfı olduğunu belirtir.
+6. `@Table(name="categories")`: Bu varlığın veritabanındaki `categories` tablosuna karşılık geldiğini belirtir.
+7. `@Id`: Bu alanın birincil anahtar olduğunu belirtir.
+8. `@GeneratedValue(strategy = GenerationType.IDENTITY)`: Birincil anahtarın otomatik olarak veritabanı tarafından oluşturulacağını belirtir.
+9. `@Column(name="id")`: `id` alanının veritabanındaki `id` sütununa karşılık geldiğini belirtir.
+10. `@Column(name="name")`: `name` alanının veritabanındaki `name` sütununa karşılık geldiğini belirtir.
+11. `@OneToMany(mappedBy = "category")`: Bu alanın birçok ürünün tek bir kategoriye ait olduğunu belirtir ve `Product` sınıfındaki `category` alanı ile ilişkilidir.
+
+### ProductRepository
+
+```java
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+  List<Product> findByNameLikeIgnoreCase(String name);
+  Optional<Product> findByNameIgnoreCase(String name);
+
+  @Query(value = "Select p from Product p " +
+          "inner join p.category " +
+          "where p.unitPrice > :unitPrice and lower(p.name) like concat('%', lower(:name), '%')", nativeQuery=false)
+  List<Product> findByNameAndUnitPriceGreaterThan(String name, BigDecimal unitPrice);
+
+  @Query(value = "Select * from products p where p.price > :unitPrice and lower(p.name) LIKE concat('%', lower(:name), '%')", nativeQuery=true)
+  List<Product> findByNameAndUnitPriceGreaterThanSql(String name, BigDecimal unitPrice);
+}
+```
+
+#### Açıklamalar
+
+1. `JpaRepository<Product, Integer>`: Bu arayüz, `Product` varlığı için CRUD işlemlerini sağlar.
+2. `findByNameLikeIgnoreCase(String name)`: Ürün adını büyük/küçük harf duyarlılığı olmadan arayan metod.
+3. `findByNameIgnoreCase(String name)`: Ürün adını büyük/küçük harf duyarlılığı olmadan arayan metod.
+4. `@Query`: JPQL sorgusunu tanımlar, belirli bir fiyatın üzerindeki ve adı belirtilen ürünleri arar.
+5. `nativeQuery=true`: Native SQL sorgusunu tanımlar, belirli bir fiyatın üzerindeki ve adı belirtilen ürünleri arar.
+
+### UserRepository
+
+```java
+public interface UserRepository extends JpaRepository<User, Integer> {
+  Optional<User> findByEmailIgnoreCase(String email);
+}
+```
+
+#### Açıklamalar
+
+1. `JpaRepository<User, Integer>`: Bu arayüz, `User` varlığı için CRUD işlemlerini sağlar.
+2. `findByEmailIgnoreCase(String email)`: Kullanıcı e-postasını büyük/küçük harf duyarlılığı olmadan arayan metod.
+
+### ProductService ve ProductServiceImpl
+
+```java
+public interface ProductService {
+   ListProductDto getById(int id);
+   List<ListProductDto> getAll();
+   List<ListProductDto> getByName(String name);
+   List<ListProductDto> getByNameAndUnitPrice(String name, BigDecimal unitPrice);
+   void add(CreateProductDto createProductDto);
+}
+```
+
+```java
+@Service
+@RequiredArgsConstructor
+public class ProductServiceImpl implements ProductService {
+  private final ProductRepository productRepository;
+  private final ProductBusinessRules productBusinessRules;
+
+  @Override
+  @Cacheable(value = "product", key = "#id")
+  public ListProductDto getById(int id) {
+    Product product = productRepository.findById(id).orElseThrow
+
+(() -> new BusinessException("Böyle bir ürün yok"));
+    ProductMapper mapper = ProductMapper.INSTANCE;
+    return mapper.productDtoFromProduct(product);
+  }
+
+  @Override
+  @Cacheable(value = "products")
+  public List<ListProductDto> getAll() {
+    List<Product> products = productRepository.findAll();
+    ProductMapper productMapper = ProductMapper.INSTANCE;
+    return productMapper.productDtoListFromProductList(products);
+  }
+
+  @Override
+  public List<ListProductDto> getByName(String name) {
+    List<Product> products = productRepository.findByNameLikeIgnoreCase("%"+name+"%");
+    ProductMapper productMapper = ProductMapper.INSTANCE;
+    return productMapper.productDtoListFromProductList(products);
+  }
+
+  @Override
+  public List<ListProductDto> getByNameAndUnitPrice(String name, BigDecimal unitPrice) {
+    List<Product> products = productRepository.findByNameAndUnitPriceGreaterThan(name, unitPrice);
+    ProductMapper productMapper = ProductMapper.INSTANCE;
+    return productMapper.productDtoListFromProductList(products);
+  }
+
+  @Override
+  @CacheEvict(value = "products", allEntries = true)
+  public void add(CreateProductDto createProductDto) {
+    productBusinessRules.productWithSameNameShouldNotExist(createProductDto.getName());
+    Product product = ProductMapper.INSTANCE.productFromCreateDto(createProductDto);
+    productRepository.save(product);
+  }
+}
+```
+
+#### Açıklamalar
+
+1. `ProductService`: Ürünlerle ilgili işlevsellikleri tanımlar.
+2. `ProductServiceImpl`: `ProductService` arayüzünün implementasyonunu sağlar.
+3. `@Service`: Bu sınıfın bir servis bileşeni olduğunu belirtir.
+4. `@RequiredArgsConstructor`: Lombok tarafından tüm final alanlar için bir constructor oluşturur ve bu alanları inject eder.
+5. `productRepository.findById(id).orElseThrow(() -> new BusinessException("Böyle bir ürün yok"))`: Belirtilen id'ye sahip ürünü bulamazsa özel bir istisna fırlatır.
+6. `ProductMapper.INSTANCE`: MapStruct kullanarak varlıkları DTO'lara dönüştürür.
+7. `@Cacheable`: Sonuçların önbelleğe alınmasını sağlar.
+8. `@CacheEvict`: Belirli bir önbellek girişini veya tüm girişleri temizler.
+9. `productBusinessRules.productWithSameNameShouldNotExist(createProductDto.getName())`: Aynı ada sahip ürünlerin var olup olmadığını kontrol eden iş kuralı.
+
+### UserService ve UserServiceImpl
+
+```java
+public interface UserService {
+  void create(CreateUserRequest createUserRequest);
+  String login(LoginRequest loginRequest);
+}
+```
+
+```java
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final UserMapper userMapper;
+  private final JwtService jwtService;
+
+  @Override
+  public void create(CreateUserRequest createUserRequest) {
+    User user = userMapper.userFromCreateRequest(createUserRequest);
+    userRepository.save(user);
+  }
+
+  @Override
+  public String login(LoginRequest loginRequest) {
+    User user = userRepository
+            .findByEmailIgnoreCase(loginRequest.getEmail()).orElseThrow(() -> new BusinessException("E-posta veya şifre hatalı."));
+
+    boolean passwordMatching = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
+    if (!passwordMatching)
+      throw new BusinessException("E-posta veya şifre hatalı.");
+
+    return jwtService.generateToken(user.getEmail());
+  }
+}
+```
+
+#### Açıklamalar
+
+1. `UserService`: Kullanıcılarla ilgili işlevsellikleri tanımlar.
+2. `UserServiceImpl`: `UserService` arayüzünün implementasyonunu sağlar.
+3. `@Service`: Bu sınıfın bir servis bileşeni olduğunu belirtir.
+4. `@RequiredArgsConstructor`: Lombok tarafından tüm final alanlar için bir constructor oluşturur ve bu alanları inject eder.
+5. `userRepository.findByEmailIgnoreCase(loginRequest.getEmail()).orElseThrow(() -> new BusinessException("E-posta veya şifre hatalı."))`: Belirtilen e-postaya sahip kullanıcıyı bulamazsa özel bir istisna fırlatır.
+6. `passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())`: Kullanıcının şifresini kontrol eder.
+7. `jwtService.generateToken(user.getEmail())`: Kullanıcı için bir JWT oluşturur.
+
+### DTO Sınıfları
+
+**LoginRequest**
+
+```java
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class LoginRequest {
+  @NotBlank
+  private String email;
+
+  @NotBlank
+  private String password;
+}
+```
+
+#### Açıklamalar
+
+1. `@NotBlank`: Alanın boş olamayacağını belirtir.
+2. `LoginRequest`: Giriş isteği için veri transfer nesnesi.
+
+**CreateProductDto ve ListProductDto**
+
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateProductDto implements Serializable {
+  @NotNull
+  @NotBlank
+  private String name;
+
+  @NotNull
+  @PositiveOrZero
+  private int stock;
+
+  @NotNull
+  private BigDecimal unitPrice;
+
+  @NotNull
+  @Positive
+  private int categoryId;
+}
+```
+
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ListProductDto implements Serializable {
+  private int id;
+  private String name;
+  private BigDecimal unitPrice;
+}
+```
+
+#### Açıklamalar
+
+1. `CreateProductDto`: Ürün oluşturma isteği için veri transfer nesnesi.
+2. `ListProductDto`: Ürün listeleme için veri transfer nesnesi.
+3. `@NotNull`, `@NotBlank`, `@PositiveOrZero`, `@Positive`: Alanların doğrulanmasını sağlar.
+
+**CreateUserRequest**
+
+```java
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateUserRequest {
+  @NotBlank
+  private String email;
+
+  @NotBlank
+  private String password;
+
+  @NotBlank
+  private String name;
+
+  @NotBlank
+  private String surname;
+
+  @NotBlank
+  @Size(min = 11, max = 11)
+  private String identityNo;
+}
+```
+
+#### Açıklamalar
+
+1. `CreateUserRequest`: Kullanıcı oluşturma isteği için veri transfer nesnesi.
+2. `@NotBlank`: Alanın boş olamayacağını belirtir.
+3. `@Size(min = 11, max = 11)`: Alanın uzunluğunu belirtir.
+
+### Mapper Sınıfları
+
+**ProductMapper**
+
+```java
+@Mapper
+public interface ProductMapper {
+  ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
+
+  @Mapping(source = "stock", target = "unitsInStock")
+  @Mapping(source = "categoryId", target = "category.id")
+  Product productFromCreateDto(CreateProductDto dto);
+
+  ListProductDto productDtoFromProduct(Product product);
+  List<ListProductDto> productDtoListFromProductList(List<Product> products);
+}
+```
+
+#### Açıklamalar
+
+1. `@Mapper`: MapStruct tarafından nesne dönüştürme işlemleri için kullanılır.
+2. `@Mapping`: Alanları eşleştirmek için kullanılır.
+3. `ProductMapper.INSTANCE`: MapStruct'ın mapper örneği.
+
+**UserMapper**
+
+```java
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public abstract class UserMapper {
+  @Autowired
+  protected PasswordEncoder passwordEncoder;
+
+  @Mapping(target = "password", source = "password", qualifiedByName = "hashPassword")
+  public abstract User userFromCreateRequest(CreateUserRequest request);
+
+  @Named("hashPassword")
+  protected String hashPassword(String password) {
+    return passwordEncoder.encode(password);
+  }
+}
+```
+
+#### Açıklamalar
+
+1. `componentModel = "spring"`: MapStruct bean'inin Spring konteyner tarafından yönetilmesini sağlar.
+2. `qualifiedByName`: Özel bir metot ile alanın dönüştürülmesini sağlar.
+3. `@Named("hashPassword")`: `hashPassword` metodunun özel olarak tanımlanmasını sağlar.
+
+### Core (Çekirdek) Konfigürasyon ve Servisler
+
+**RedisConfiguration**
+
+```java
+@Configuration
+public class RedisConfiguration {
+  @Bean
+  public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    RedisTemplate<String, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(connectionFactory);
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+    template.setHashKeySerializer(new StringRedisSerializer());
+    template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+    return template;
+  }
+
+  @Bean
+  public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+    RedisCacheConfiguration configuration = RedisCacheConfiguration
+            .defaultCacheConfig()
+            .entryTtl(Duration.ofMinutes(30));
+    return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(configuration).build();
+  }
+}
+```
+
+#### Açıklamalar
+
+1. `@Configuration`: Bu sınıfın bir konfigürasyon sınıfı olduğunu belirtir.
+2. `@Bean`: Bir bean tanımlandığını belirtir.
+3. `RedisTemplate`: Redis ile veri alışverişini sağlayan yapı.
+4. `CacheManager`: Ön bellek yönetimi için kullanılır.
+
+**SecurityConfig**
+
+```java
+@Configuration
+public class SecurityConfig {
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(req -> req.anyRequest().permitAll());
+    return http.build();
+  }
+}
+```
+
+#### Açıklamalar
+
+1. `@Configuration`: Bu sınıfın bir konfigürasyon sınıfı olduğunu belirtir.
+2. `@Bean`: Bir bean tanımlandığını belirtir.
+3. `PasswordEncoder`: Şifrelerin hashlenmesi için kullanılır.
+4. `SecurityFilterChain`: Uygulamanın güvenlik ayarlarını yapılandırır.
+
+
+**GlobalExceptionHandler**
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+  @ExceptionHandler({ MethodArgumentNotValidException.class })
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public Map<String, String> handleValidationException(MethodArgumentNotValidException exception) {
+    Map<String, String> errors = new HashMap<>();
+    for (FieldError error : exception.getBindingResult().getFieldErrors()) {
+      errors.put(error.getField(), error.getDefaultMessage());
+    }
+    return errors;
+  }
+
+  @ExceptionHandler({ BusinessException.class })
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public BusinessExceptionResponse handleBusinessException(BusinessException exception) {
+    return new BusinessExceptionResponse(exception.getMessage());
+  }
+
+  @ExceptionHandler({ RuntimeException.class })
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  public String handleRuntimeException() {
+    return "Bilinmedik hata";
+  }
+}
+```
+
+
+#### Açıklamalar
+
+1. `@RestControllerAdvice`: Uygulama genelinde istisnaları yakalayıp işlemek için kullanılır.
+2. `@ExceptionHandler`: Belirli istisnaların işlenmesini sağlar.
+3. `handleValidationException`: Geçersiz giriş hatalarını yakalayıp yanıt döner.
+4. `handleBusinessException`: Özel iş istisnalarını yakalar ve yanıt döner.
+5. `handleRuntimeException`: Genel çalışma zamanı hatalarını yakalar ve yanıt döner.
+
+**BusinessException ve BusinessExceptionResponse**
+
+```java
+public class BusinessException extends RuntimeException {
+  public BusinessException(String message) {
+    super(message);
+  }
+}
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class BusinessExceptionResponse {
+  private String message;
+}
+```
+
+#### Açıklamalar
+
+1. `BusinessException`: Özel iş istisnalarını tanımlar.
+2. `BusinessExceptionResponse`: İş istisnalarına yönelik yanıt nesnesidir.
+
+**JwtService**
+
+```java
+@Service
+public class JwtService {
+  @Value("${jwt.expiration}")
+  private Long EXPIRATION;
+
+  @Value("${jwt.secret_key}")
+  private String SECRET_KEY;
+
+  public String generateToken(String username) {
+    return Jwts.builder()
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
+            .subject(username)
+            .signWith(getSignKey())
+            .compact();
+  }
+
+  private Key getSignKey() {
+    byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+    return Keys.hmacShaKeyFor(keyBytes);
+  }
+}
+```
+
+#### Açıklamalar
+
+1. `@Service`: Bu sınıfın bir servis bileşeni olduğunu belirtir.
+2. `@Value`: Konfigürasyon dosyasından değerleri okur.
+3. `generateToken`: Kullanıcı adı ile bir JWT oluşturur.
+4. `getSignKey`: JWT imzalarken kullanılacak anahtarı döner.
+
+### 3. İlişkiler
+
+- **User ve UserRepository**: `User` entity sınıfı, `UserRepository` aracılığıyla veritabanı işlemlerini gerçekleştirir.
+- **Product ve ProductRepository**: `Product` entity sınıfı, `ProductRepository` aracılığıyla veritabanı işlemlerini gerçekleştirir.
+- **Category ve Product**: `Category` entity sınıfı, birden fazla ürüne sahip olabilir (`OneToMany`), her ürün bir kategoriye aittir (`ManyToOne`).
+- **UserService ve UserServiceImpl**: Kullanıcı işlemlerini yönetir.
+- **ProductService ve ProductServiceImpl**: Ürün işlemlerini yönetir.
+- **UserMapper ve UserServiceImpl**: `CreateUserRequest` nesnesini `User` nesnesine dönüştürmek için kullanılır.
+- **ProductMapper ve ProductServiceImpl**: Ürün DTO'larını ve entity'lerini dönüştürmek için kullanılır.
+
+### 4. Yapılar
+
+#### Redis
+
+Redis, hızlı veri erişimi ve önbellekleme amacıyla kullanılır. `RedisConfiguration` sınıfı, RedisTemplate ve CacheManager bean'lerini tanımlar.
+
+#### JWT
+
+JWT (JSON Web Token), kullanıcıların kimlik doğrulaması için kullanılır. `JwtService` sınıfı, token oluşturma ve imzalama işlemlerini gerçekleştirir.
+
+#### Exception Handler
+
+`GlobalExceptionHandler` sınıfı, uygulama genelinde oluşan istisnaları yakalayıp işlemek için kullanılır. Özel iş kuralları hataları için `BusinessException` sınıfı tanımlanmıştır.
+
+#### Validation
+
+DTO sınıflarında kullanılan `@NotBlank`, `@NotNull`, `@PositiveOrZero`, `@Size` gibi doğrulama anotasyonları, alanların doğrulanmasını sağlar.
+
+#### Annotations
+
+- **@Entity, @Table, @Id, @GeneratedValue, @Column**: JPA entity sınıfları için kullanılır.
+- **@Getter, @Setter, @AllArgsConstructor, @NoArgsConstructor**: Lombok kütüphanesi ile otomatik metod oluşturma.
+- **@Mapper, @Mapping**: MapStruct ile nesne dönüştürme işlemleri.
+- **@Service, @Configuration, @RestControllerAdvice, @Bean**: Spring bileşenleri ve konfigürasyonları.
+- **@ExceptionHandler**: Özel istisna işleyicileri.
+
+#### MapStruct
+
+MapStruct, DTO ve entity sınıfları arasında dönüştürme işlemlerini kolaylaştırır. `ProductMapper` ve `UserMapper` sınıfları bu amaçla kullanılır.
+
+### Sonuç
+
+Proje, kullanıcı ve ürün yönetimi işlemlerini Spring Boot ve çeşitli kütüphaneler kullanarak gerçekleştirmektedir. Projenin genel akışını, sınıflar arası ilişkileri ve kullanılan yapıların işlevlerini detaylı bir şekilde açıklamış olduk. Eğer daha spesifik bir sorunuz veya anlamadığınız bir kısım varsa, lütfen belirtin.
 
 ---
 
@@ -818,3 +1470,4 @@ SQL, ilişkisel veri tabanları ile etkileşim kurmak için kullanılan bir sorg
 SQL, ilişkisel veri tabanları ile veri yönetimi ve sorgulama için temel bir araçtır. Temel SQL komutları ve RDBMS'ler, veri tabanı yönetimini ve etkileşimini sağlar.
 
 ---
+
