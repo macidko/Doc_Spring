@@ -1,5 +1,5 @@
 ## İçindekiler
-- [Proje İncelemesi ve Açıklamalar](#proje-incelemesi-ve-açıklamalar)
+- [Proje İncelemesi ve Açıklamalar](#proje-incelemesi-ve-aciklamalar)
 - [Lombok](#lombok)
 - [MapStruct](#mapstruct)
 - [Spring IoC (Inversion of Control)](#spring-ioc-inversion-of-control)
