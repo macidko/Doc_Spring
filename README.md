@@ -22,15 +22,7 @@
 
 ## Proje İncelemesi ve Açıklamalar
 
-### 1. Projenin Genel Akışı
-
-Bu projede, kullanıcı ve ürün yönetimi işlemleri Spring Boot ve çeşitli kütüphaneler kullanılarak gerçekleştirilmiştir. Kullanıcılar ve ürünlerle ilgili CRUD işlemleri yapılmaktadır. Projede JWT (JSON Web Token) kullanılarak kimlik doğrulama, Redis kullanılarak önbellekleme, MapStruct kullanılarak nesne dönüştürme ve Spring Security ile güvenlik sağlanmaktadır. Ayrıca, özel hata yönetimi ve doğrulama mekanizmaları da yer almaktadır.
-
-### 2. Kod Açıklamaları
-Tabii ki, kodların her bir satırını detaylı bir şekilde açıklayacağım. Daha önce yapılan açıklamalara ek olarak, kod satırlarını da anlamanıza yardımcı olacak şekilde adım adım açıklamalar ekleyelim.
-
 ### User Entity
-
 ```java
 @Getter
 @Setter
@@ -187,6 +179,75 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 4. `@Query`: JPQL sorgusunu tanımlar, belirli bir fiyatın üzerindeki ve adı belirtilen ürünleri arar.
 5. `nativeQuery=true`: Native SQL sorgusunu tanımlar, belirli bir fiyatın üzerindeki ve adı belirtilen ürünleri arar.
 
+#### Product Repository Detay
+
+```java
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+```
+
+- **public interface ProductRepository**: `ProductRepository` adında bir arayüz tanımlar. `public` erişim belirleyicisi, bu arayüzün diğer paketlerden de erişilebileceğini belirtir.
+- **extends JpaRepository<Product, Integer>**: Bu arayüz, Spring Data JPA'nın sağladığı `JpaRepository` arayüzünden türetilmiştir. Bu, `Product` nesneleri için temel CRUD (Create, Read, Update, Delete) işlemlerini sağlar. `Integer` tipi, `Product` nesnesinin birincil anahtarının veri türüdür.
+
+### 1. findByNameLikeIgnoreCase Metodu
+
+```java
+  List<Product> findByNameLikeIgnoreCase(String name);
+```
+
+- **List<Product> findByNameLikeIgnoreCase(String name)**: Bu metod, ürün adının belirtilen `name` ile eşleşenlerini arar ve döner.
+  - **List<Product>**: Bu metod, eşleşen ürünlerin bir listesini döner.
+  - **findByNameLikeIgnoreCase**: Method adı, Spring Data JPA'nın sorgu oluşturma yeteneğinden yararlanır. `Like` ifadesi, SQL'deki `LIKE` anahtar kelimesine karşılık gelir ve büyük/küçük harf duyarlılığı olmaksızın arama yapar.
+  - **String name**: Ürün adını aramak için kullanılan parametredir.
+
+### 2. findByNameIgnoreCase Metodu
+
+```java
+  Optional<Product> findByNameIgnoreCase(String name);
+```
+
+- **Optional<Product> findByNameIgnoreCase(String name)**: Bu metod, belirtilen `name` ile tam olarak eşleşen bir ürünü arar ve döner.
+  - **Optional<Product>**: Bu metod, ürün bulunduğunda bir `Product` nesnesi döner; eğer ürün bulunamazsa, `Optional.empty()` döner. Bu, null kontrolü yapmadan güvenli bir şekilde ürünün var olup olmadığını kontrol etmeyi sağlar.
+  - **findByNameIgnoreCase**: Method adı, büyük/küçük harf duyarlılığı olmaksızın tam eşleşme araması yapar.
+  - **String name**: Ürün adını aramak için kullanılan parametredir.
+
+### 3. findByNameAndUnitPriceGreaterThan Metodu
+
+```java
+  @Query(value = "Select p from Product p " +
+          "inner join p.category " +
+          "where p.unitPrice > :unitPrice and lower(p.name) like concat('%', lower(:name), '%')", nativeQuery=false)
+  List<Product> findByNameAndUnitPriceGreaterThan(String name, BigDecimal unitPrice);
+```
+
+- **@Query**: Bu anotasyon, metodun özel bir JPQL (Java Persistence Query Language) sorgusu kullanarak çalışacağını belirtir.
+- **value = "Select p from Product p ...**: JPQL sorgusu.
+  - `inner join p.category`: Ürünlerin kategorileri ile ilişkili olduğunu belirtir.
+  - `where p.unitPrice > :unitPrice`: Belirtilen `unitPrice` değerinden büyük olan ürünleri bulur.
+  - `lower(p.name) like concat('%', lower(:name), '%')`: Ürün adının belirli bir isimle eşleşip eşleşmediğini kontrol eder, büyük/küçük harf duyarlılığı olmadan.
+  - `:unitPrice` ve `:name`: Metod parametreleri ile bağlanır.
+- **List<Product>**: Bu metod, sorguya uyan ürünlerin bir listesini döner.
+
+### 4. findByNameAndUnitPriceGreaterThanSql Metodu
+
+```java
+  @Query(value = "Select * from products p where p.price > :unitPrice and lower(p.name) LIKE concat('%', lower(:name), '%')", nativeQuery=true)
+  List<Product> findByNameAndUnitPriceGreaterThanSql(String name, BigDecimal unitPrice);
+```
+
+- **@Query**: Bu anotasyon, metodun özel bir SQL sorgusu kullanarak çalışacağını belirtir.
+- **value = "Select * from products p ...**: Native SQL sorgusu.
+  - `where p.price > :unitPrice`: Belirtilen `unitPrice` değerinden büyük olan ürünleri bulur.
+  - `lower(p.name) LIKE concat('%', lower(:name), '%')`: Ürün adının belirli bir isimle eşleşip eşleşmediğini kontrol eder, büyük/küçük harf duyarlılığı olmadan.
+- **nativeQuery=true**: Bu sorgunun native SQL olduğunu belirtir.
+- **List<Product>**: Bu metod, sorguya uyan ürünlerin bir listesini döner.
+
+### Özet
+
+`ProductRepository`, `Product` varlığı ile ilgili veritabanı işlemlerini gerçekleştirmek için gereken metodları tanımlar. İçinde:
+- Ürün adını büyük/küçük harf duyarlılığı olmadan arama yapan ve döndüren metodlar.
+- Ürün adını ve fiyatı kullanarak ürünleri sorgulayan özel JPQL ve native SQL sorguları ile veritabanında arama yapan metodlar bulunur.
+
+Bu arayüz, uygulamanın veri erişim katmanında önemli bir rol oynar ve ürünlerle ilgili veritabanı işlemlerini kolaylaştırır.
 ### UserRepository
 
 ```java
@@ -199,6 +260,79 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 1. `JpaRepository<User, Integer>`: Bu arayüz, `User` varlığı için CRUD işlemlerini sağlar.
 2. `findByEmailIgnoreCase(String email)`: Kullanıcı e-postasını büyük/küçük harf duyarlılığı olmadan arayan metod.
+
+#### UserRepository Detay
+Tabii ki! Aşağıda `ProductRepository` arayüzündeki her bir satırı detaylı bir şekilde açıklayacağım. Bu arayüz, Spring Data JPA kullanarak `Product` nesneleri ile veritabanı işlemleri gerçekleştirmek için gereken metodları tanımlar.
+
+### ProductRepository Arayüzü
+
+```java
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+```
+
+- **public interface ProductRepository**: `ProductRepository` adında bir arayüz tanımlar. `public` erişim belirleyicisi, bu arayüzün diğer paketlerden de erişilebileceğini belirtir.
+- **extends JpaRepository<Product, Integer>**: Bu arayüz, Spring Data JPA'nın sağladığı `JpaRepository` arayüzünden türetilmiştir. Bu, `Product` nesneleri için temel CRUD (Create, Read, Update, Delete) işlemlerini sağlar. `Integer` tipi, `Product` nesnesinin birincil anahtarının veri türüdür.
+
+### 1. findByNameLikeIgnoreCase Metodu
+
+```java
+  List<Product> findByNameLikeIgnoreCase(String name);
+```
+
+- **List<Product> findByNameLikeIgnoreCase(String name)**: Bu metod, ürün adının belirtilen `name` ile eşleşenlerini arar ve döner.
+  - **List<Product>**: Bu metod, eşleşen ürünlerin bir listesini döner.
+  - **findByNameLikeIgnoreCase**: Method adı, Spring Data JPA'nın sorgu oluşturma yeteneğinden yararlanır. `Like` ifadesi, SQL'deki `LIKE` anahtar kelimesine karşılık gelir ve büyük/küçük harf duyarlılığı olmaksızın arama yapar.
+  - **String name**: Ürün adını aramak için kullanılan parametredir.
+
+### 2. findByNameIgnoreCase Metodu
+
+```java
+  Optional<Product> findByNameIgnoreCase(String name);
+```
+
+- **Optional<Product> findByNameIgnoreCase(String name)**: Bu metod, belirtilen `name` ile tam olarak eşleşen bir ürünü arar ve döner.
+  - **Optional<Product>**: Bu metod, ürün bulunduğunda bir `Product` nesnesi döner; eğer ürün bulunamazsa, `Optional.empty()` döner. Bu, null kontrolü yapmadan güvenli bir şekilde ürünün var olup olmadığını kontrol etmeyi sağlar.
+  - **findByNameIgnoreCase**: Method adı, büyük/küçük harf duyarlılığı olmaksızın tam eşleşme araması yapar.
+  - **String name**: Ürün adını aramak için kullanılan parametredir.
+
+### 3. findByNameAndUnitPriceGreaterThan Metodu
+
+```java
+  @Query(value = "Select p from Product p " +
+          "inner join p.category " +
+          "where p.unitPrice > :unitPrice and lower(p.name) like concat('%', lower(:name), '%')", nativeQuery=false)
+  List<Product> findByNameAndUnitPriceGreaterThan(String name, BigDecimal unitPrice);
+```
+
+- **@Query**: Bu anotasyon, metodun özel bir JPQL (Java Persistence Query Language) sorgusu kullanarak çalışacağını belirtir.
+- **value = "Select p from Product p ...**: JPQL sorgusu.
+  - `inner join p.category`: Ürünlerin kategorileri ile ilişkili olduğunu belirtir.
+  - `where p.unitPrice > :unitPrice`: Belirtilen `unitPrice` değerinden büyük olan ürünleri bulur.
+  - `lower(p.name) like concat('%', lower(:name), '%')`: Ürün adının belirli bir isimle eşleşip eşleşmediğini kontrol eder, büyük/küçük harf duyarlılığı olmadan.
+  - `:unitPrice` ve `:name`: Metod parametreleri ile bağlanır.
+- **List<Product>**: Bu metod, sorguya uyan ürünlerin bir listesini döner.
+
+### 4. findByNameAndUnitPriceGreaterThanSql Metodu
+
+```java
+  @Query(value = "Select * from products p where p.price > :unitPrice and lower(p.name) LIKE concat('%', lower(:name), '%')", nativeQuery=true)
+  List<Product> findByNameAndUnitPriceGreaterThanSql(String name, BigDecimal unitPrice);
+```
+
+- **@Query**: Bu anotasyon, metodun özel bir SQL sorgusu kullanarak çalışacağını belirtir.
+- **value = "Select * from products p ...**: Native SQL sorgusu.
+  - `where p.price > :unitPrice`: Belirtilen `unitPrice` değerinden büyük olan ürünleri bulur.
+  - `lower(p.name) LIKE concat('%', lower(:name), '%')`: Ürün adının belirli bir isimle eşleşip eşleşmediğini kontrol eder, büyük/küçük harf duyarlılığı olmadan.
+- **nativeQuery=true**: Bu sorgunun native SQL olduğunu belirtir.
+- **List<Product>**: Bu metod, sorguya uyan ürünlerin bir listesini döner.
+
+### Özet
+
+`ProductRepository`, `Product` varlığı ile ilgili veritabanı işlemlerini gerçekleştirmek için gereken metodları tanımlar. İçinde:
+- Ürün adını büyük/küçük harf duyarlılığı olmadan arama yapan ve döndüren metodlar.
+- Ürün adını ve fiyatı kullanarak ürünleri sorgulayan özel JPQL ve native SQL sorguları ile veritabanında arama yapan metodlar bulunur.
+
+Bu arayüz, uygulamanın veri erişim katmanında önemli bir rol oynar ve ürünlerle ilgili veritabanı işlemlerini kolaylaştırır.
 
 ### ProductService ve ProductServiceImpl
 
@@ -272,6 +406,225 @@ public class ProductServiceImpl implements ProductService {
 7. `@Cacheable`: Sonuçların önbelleğe alınmasını sağlar.
 8. `@CacheEvict`: Belirli bir önbellek girişini veya tüm girişleri temizler.
 9. `productBusinessRules.productWithSameNameShouldNotExist(createProductDto.getName())`: Aynı ada sahip ürünlerin var olup olmadığını kontrol eden iş kuralı.
+
+#### ProductService Detay
+```java
+public interface ProductService {
+```
+
+- **public interface ProductService**: `ProductService` adında bir arayüz tanımlar. `public` erişim belirleyicisi, bu arayüzün diğer paketlerden de erişilebileceğini belirtir. Arayüz, bir sınıfın uygulaması gereken metodları tanımlar, ancak bu metodların kendisini değil, sadece imzalarını içerir.
+
+#### 1. getById Metodu
+
+```java
+   ListProductDto getById(int id);
+```
+
+- **ListProductDto getById(int id)**: Bu metod, belirli bir ürünün ID'sini alır ve o ürüne karşılık gelen `ListProductDto` nesnesini döner.
+  - **int id**: Parametre olarak alınan ürün ID'sidir.
+  - **ListProductDto**: Ürün bilgilerini taşıyan bir veri transfer nesnesidir (DTO). Bu nesne, ürünle ilgili bilgileri içerir ve istemciye iletilmek üzere tasarlanmıştır.
+
+#### 2. getAll Metodu
+
+```java
+   List<ListProductDto> getAll();
+```
+
+- **List<ListProductDto> getAll()**: Bu metod, tüm ürünleri döndürür.
+  - **List<ListProductDto>**: Tüm ürünlerin `ListProductDto` türünde bir listesini döner. Bu liste, sistemdeki mevcut tüm ürünlerin bilgilerini içerir.
+
+#### 3. getByName Metodu
+
+```java
+   List<ListProductDto> getByName(String name);
+```
+
+- **List<ListProductDto> getByName(String name)**: Bu metod, belirli bir ürün adını alır ve o adla eşleşen ürünleri döner.
+  - **String name**: Parametre olarak alınan ürün adıdır. Bu ad ile eşleşen ürünler aratılacaktır.
+  - **List<ListProductDto>**: Ürün adıyla eşleşen tüm `ListProductDto` nesnelerinin listesini döner.
+
+#### 4. getByNameAndUnitPrice Metodu
+
+```java
+   List<ListProductDto> getByNameAndUnitPrice(String name, BigDecimal unitPrice);
+```
+
+- **List<ListProductDto> getByNameAndUnitPrice(String name, BigDecimal unitPrice)**: Bu metod, belirli bir ürün adı ve birim fiyatı alır ve bu kriterlere uyan ürünleri döner.
+  - **String name**: Ürün adı parametresi.
+  - **BigDecimal unitPrice**: Ürün birim fiyatı parametresi. Bu fiyattan yüksek olan ürünler aranacaktır.
+  - **List<ListProductDto>**: Bu kriterlere uyan ürünlerin `ListProductDto` nesnelerinin listesini döner.
+
+#### 5. add Metodu
+
+```java
+   void add(CreateProductDto createProductDto);
+```
+
+- **void add(CreateProductDto createProductDto)**: Bu metod, yeni bir ürün eklemek için kullanılır.
+  - **CreateProductDto createProductDto**: Yeni bir ürün oluşturmak için gerekli bilgileri içeren veri transfer nesnesidir. Bu nesne, ürünün adı, stok durumu, fiyatı ve kategorisi gibi bilgileri içerir.
+  - **void**: Bu metod herhangi bir değer döndürmez. Yeni ürünü eklemek için gerekli işlemleri gerçekleştirir.
+
+### Özet
+
+`ProductService` arayüzü, ürünlerle ilgili işlevleri tanımlar. İçinde, belirli bir ID ile ürün alma, tüm ürünleri listeleme, ürün adına göre arama yapma, ürün adı ve birim fiyatına göre arama yapma ve yeni bir ürün ekleme gibi metodlar yer alır. Bu arayüz, uygulamanızın servis katmanında ürün yönetimi ile ilgili işlevselliği sağlamak için kullanılacaktır.
+
+Bu arayüzü implement eden sınıflar, bu metodların nasıl çalışacağını tanımlamakla sorumludur.
+
+#### ProductImpl Detay
+```java
+@Service
+@RequiredArgsConstructor
+public class ProductServiceImpl implements ProductService {
+```
+
+- `@Service`: Bu sınıfın bir servis bileşeni olduğunu belirtir. Spring, bu sınıfı bileşen taraması ile bulur ve yönetir.
+- `@RequiredArgsConstructor`: Lombok kütüphanesi, tüm final alanlar için bir constructor oluşturur. Böylece bağımlılıkları otomatik olarak enjekte eder.
+- `public class ProductServiceImpl implements ProductService`: `ProductService` arayüzünü implement eden sınıf. Bu, `ProductService` arayüzünde tanımlanan tüm metodları uygulamak zorundadır.
+
+```java
+  private final ProductRepository productRepository;
+  private final ProductBusinessRules productBusinessRules;
+```
+
+- `private final ProductRepository productRepository;`: Ürün veritabanı işlemlerini gerçekleştirmek için kullanılan repository. Spring tarafından otomatik olarak enjekte edilir.
+- `private final ProductBusinessRules productBusinessRules;`: Ürün ile ilgili iş kurallarını kontrol eden bir nesne. Bu, ürün eklenmeden önce belirli kuralların kontrol edilmesini sağlar.
+
+### Metodlar
+
+#### 1. getById
+
+```java
+  @Override
+  @Cacheable(value = "product", key = "#id") // product.1, product.2
+  public ListProductDto getById(int id) {
+```
+
+- `@Override`: Bu metodun bir üst sınıf veya arayüzde tanımlı olan bir metodun implementasyonu olduğunu belirtir.
+- `@Cacheable(value = "product", key = "#id")`: Bu metod çağrıldığında, sonuçların Redis gibi bir önbellekte saklanmasını sağlar. `value` önbellek adını belirtir; `key` ise önbellek için anahtarı belirtir (bu durumda ürün ID'si).
+
+```java
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new BusinessException("Böyle bir ürün yok"));
+```
+
+- `productRepository.findById(id)`: Belirtilen ID'ye sahip ürünü veritabanında arar.
+- `.orElseThrow(() -> new BusinessException("Böyle bir ürün yok"))`: Eğer ürün bulunamazsa, bir `BusinessException` fırlatır.
+
+```java
+    ProductMapper mapper = ProductMapper.INSTANCE;
+    return mapper.productDtoFromProduct(product);
+  }
+```
+
+- `ProductMapper mapper = ProductMapper.INSTANCE;`: `ProductMapper`'ın singleton örneğini alır. `ProductMapper`, MapStruct kullanarak `Product` ve `ListProductDto` arasında dönüşüm yapar.
+- `return mapper.productDtoFromProduct(product);`: Bulunan `Product` nesnesini `ListProductDto` nesnesine dönüştürür ve döner.
+
+#### 2. getAll
+
+```java
+  @Override
+  @Cacheable(value = "products")
+  public List<ListProductDto> getAll() {
+```
+
+- `@Cacheable(value = "products")`: Bu metod çağrıldığında, sonuçların önbelleğe alınmasını sağlar. Bu, tüm ürünlerin listelendiği metoddur.
+
+```java
+    List<Product> products = productRepository.findAll();
+```
+
+- `productRepository.findAll()`: Veritabanındaki tüm ürünleri alır.
+
+```java
+    ProductMapper productMapper = ProductMapper.INSTANCE;
+    return productMapper.productDtoListFromProductList(products);
+  }
+```
+
+- `ProductMapper productMapper = ProductMapper.INSTANCE;`: `ProductMapper`'ın singleton örneğini alır.
+- `return productMapper.productDtoListFromProductList(products);`: Alınan ürün listesini `ListProductDto` listesine dönüştürür ve döner.
+
+#### 3. getByName
+
+```java
+  @Override
+  public List<ListProductDto> getByName(String name) {
+```
+
+- `public List<ListProductDto> getByName(String name)`: Ürün adını kullanarak ürünleri arayan bir metod.
+
+```java
+    List<Product> products = productRepository.findByNameLikeIgnoreCase("%"+name+"%");
+```
+
+- `productRepository.findByNameLikeIgnoreCase("%"+name+"%")`: Belirtilen isimle eşleşen ürünleri büyük/küçük harf duyarlılığı olmadan arar. `"%"+name+"%"` ifadesi, isimle eşleşen tüm ürünleri bulmak için kullanılan bir SQL gibi bir `LIKE` ifadesidir.
+
+```java
+    ProductMapper productMapper = ProductMapper.INSTANCE;
+    return productMapper.productDtoListFromProductList(products);
+  }
+```
+
+- Alınan ürün listesini `ListProductDto` listesine dönüştürür ve döner.
+
+#### 4. getByNameAndUnitPrice
+
+```java
+  @Override
+  public List<ListProductDto> getByNameAndUnitPrice(String name, BigDecimal unitPrice) {
+```
+
+- `public List<ListProductDto> getByNameAndUnitPrice(String name, BigDecimal unitPrice)`: Ürün adını ve birim fiyatını kullanarak ürünleri arayan bir metod.
+
+```java
+    List<Product> products = productRepository.findByNameAndUnitPriceGreaterThan(name, unitPrice);
+```
+
+- `productRepository.findByNameAndUnitPriceGreaterThan(name, unitPrice)`: Belirtilen isimle eşleşen ve birim fiyatı belirtilen değerden büyük olan ürünleri bulur.
+
+```java
+    ProductMapper productMapper = ProductMapper.INSTANCE;
+    return productMapper.productDtoListFromProductList(products);
+  }
+```
+
+- Alınan ürün listesini `ListProductDto` listesine dönüştürür ve döner.
+
+#### 5. add
+
+```java
+  @Override
+  @CacheEvict(value = "products", allEntries = true)
+  public void add(CreateProductDto createProductDto) {
+```
+
+- `@CacheEvict(value = "products", allEntries = true)`: Bu metod çağrıldığında, önbellekten "products" anahtarına sahip tüm girişleri temizler. Yeni bir ürün eklendiğinde önbelleğin güncellenmesi için kullanılır.
+
+```java
+    productBusinessRules.productWithSameNameShouldNotExist(createProductDto.getName());
+```
+
+- `productBusinessRules.productWithSameNameShouldNotExist(createProductDto.getName())`: Yeni eklenmek istenen ürün adının zaten mevcut olup olmadığını kontrol eden iş kuralı.
+
+```java
+    Product product = ProductMapper.INSTANCE.productFromCreateDto(createProductDto);
+```
+
+- `ProductMapper.INSTANCE.productFromCreateDto(createProductDto)`: `CreateProductDto` nesnesini bir `Product` nesnesine dönüştürür.
+
+```java
+    productRepository.save(product);
+  }
+```
+
+- `productRepository.save(product)`: Yeni `Product` nesnesini veritabanına kaydeder.
+
+### Özet
+
+- `ProductServiceImpl` sınıfı, ürünlerle ilgili iş mantığını içerir ve `ProductService` arayüzünü implement eder.
+- Redis, veri önbellekleme için kullanılır; `@Cacheable` ve `@CacheEvict` anotasyonları ile önbellek yönetimi sağlanır.
+- Ürün bilgileri üzerinde CRUD işlemleri gerçekleştirilir, özellikle `getById`, `getAll`, `getByName`, ve `add` metodları, veritabanındaki verileri alır veya günceller.
+- `ProductMapper`, DTO'lar ve entity'ler arasında dönüştürme işlemlerini gerçekleştirir.
 
 ### UserService ve UserServiceImpl
 
@@ -501,6 +854,8 @@ public class RedisConfiguration {
 2. `@Bean`: Bir bean tanımlandığını belirtir.
 3. `RedisTemplate`: Redis ile veri alışverişini sağlayan yapı.
 4. `CacheManager`: Ön bellek yönetimi için kullanılır.
+
+#### Detay
 
 **SecurityConfig**
 
