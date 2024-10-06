@@ -1,19 +1,23 @@
 
 
 ## İçindekiler
-- [Proje İncelemesi ve Açıklamalar](#proje-incelemesi-ve-açıklamalar)
+- [ENTITY](#entity)
   - [User Entity](#user-entity)
     - [Açıklama](#user-entity-açıklama)
   - [Product Entity](#product-entity)
     - [Açıklama](#product-entity-açıklama)
   - [Category Entity](#category-entity)
     - [Açıklama](#category-entity-açıklama)
+---
+- [REPOSITORY](#repository)
   - [Product Repository](#productrepository)
     - [Açıklama](#product-repository-açıklama)
     - [Detay](#product-repository-detay)
   - [User Repository](#userrepository)
     - [Açıklama](#userrepository-açıklama)
     - [Detay](#userrepository-detay)
+---
+- [SERVICE](#service)
   - [Product Service ve Product Service Implementation](#productservice-ve-productserviceimpl)
     - [Açıklama](#productservice-ve-productserviceimpl-açıklama)
     - [Product Service Detay](#productservice-detay)
@@ -26,6 +30,38 @@
     - [Açıklama](#userservice-ve-userserviceimpl-açıklama)
     - [User Service Detay](#userservice-detay)
     - [User Service Impl Detay](#userserviceimpl-detay)
+---
+- [CONTROLLER](#controller)
+  - [Auth Controller](#authcontroller)
+    - [Auth Controller Açıklama](#authcontroller-açıklama)
+    - [Auth Controller Detay](#authcontroller-detay)
+  - [User Controller](#userscontroller)
+    - [User Controller Açıklama](#userscontroller-açıklama)
+    - [Auth Controller Detay](#userscontroller-detay)
+  - [Product Controller](#productscontroller)
+    - [Products Controller Açıklama](#productscontroller-açıklama)
+    - [Products Controller Detay](#productscontroller-detay)
+---
+- [CORE](#core)
+  - [RedisConfiguration](#redisconfiguration)
+    - [Redis Configuration Açıklama](#redisconfiguration-açıklamala)
+    - [Redis Configuration Detay](#redisconfiguration-detaylar)
+  - [SecurityConfig](#securityconfig)
+    - [SecurityConfig Açıklama](#securityconfig-açıklama)
+    - [SecurityConfig Detay](#securityconfig-detay)
+  - [JwtFilter](#jwtfilter)
+    - [JwtFilter Açıklama](#jwtfilter-açıklama)
+    - [JwtFilter Detay](#jwtfilter-detay)
+  - [JwtService](#jwtservice)
+    - [JwtService Açıklama](#jwtservice-açıklama)
+    - [JwtService Detay](#jwtservice-detay)
+---
+- [DTOs](#dtos)
+  - [LoginRequest](#loginrequest)
+  - [CreateProductDto](#createproductdto)
+  - [ListProductDto](#listproductdto)
+  - [CreateUserRequest](#createuserrequest)
+---
 - [Lombok](#lombok)
 - [MapStruct](#mapstruct)
 - [Spring IoC (Inversion of Control)](#spring-ioc-inversion-of-control)
@@ -46,6 +82,8 @@
 
 ---   
 ## Proje İncelemesi ve Açıklamalar
+
+## ENTITY
 
 ### User Entity
 
@@ -125,6 +163,8 @@
 9. `@Column(name="id")`: `id` alanının veritabanındaki `id` sütununa karşılık geldiğini belirtir.
 10. `@Column(name="name")`: `name` alanının veritabanındaki `name` sütununa karşılık geldiğini belirtir.
 11. `@OneToMany(mappedBy = "category")`: Bu alanın birçok ürünün tek bir kategoriye ait olduğunu belirtir ve `Product` sınıfındaki `category` alanı ile ilişkilidir.
+
+## REPOSITORY
 
 ### ProductRepository
 
@@ -235,6 +275,9 @@ Optional<User> findByEmailIgnoreCase(String email);
 - Kullanıcı e-postasına göre kullanıcıyı arayan ve döndüren bir metod bulunur. Bu metod, büyük/küçük harf duyarlılığı olmadan çalışır ve kullanıcı nesnesini güvenli bir şekilde döndürür.
 
 Bu arayüz, uygulamanın veri erişim katmanında önemli bir rol oynar ve kullanıcılarla ilgili veritabanı işlemlerini kolaylaştırır.
+
+## SERVICE
+
 ### ProductService ve ProductServiceImpl
 
 ```java public interface ProductService {    
@@ -646,7 +689,10 @@ return userRepository.findByEmailIgnoreCase(username) .orElseThrow(() -> new Use
 - `UserServiceImpl` sınıfı, kullanıcılarla ilgili iş mantığını içerir ve `UserService` arayüzünü implement eder.
 - Kullanıcı oluşturma ve kullanıcı adıyla kullanıcı detaylarını yükleme işlemleri gerçekleştirilir.
 - Kullanıcı bilgileri üzerinde CRUD işlemleri gerçekleştirilir, özellikle `create` ve `loadUserByUsername` metodları, veritabanındaki verileri alır veya günceller.
-### ProductsController Açıklama
+
+## CONTROLLER
+
+### ProductsController
 
 ```java  
 @RestController  
@@ -690,6 +736,8 @@ public class ProductsController {
 3. `@RequestMapping("/api/v1/products")`: Bu denetleyiciye gelen tüm isteklerin `/api/v1/products` yolunu kullanacağını belirtir.
 4. `@RequiredArgsConstructor`: Lombok tarafından tüm final alanlar için bir constructor oluşturur ve bu alanları inject eder.
 5. `private final ProductService productService;`: Ürünlerle ilgili iş mantığını yöneten servis nesnesi. Spring tarafından otomatik olarak enjekte edilir.
+
+#### ProductsController Detay
 
 #### Metodlar
 
@@ -764,7 +812,7 @@ public ResponseEntity<ListProductDto> getById(@RequestParam int id) {
 
 `ProductsController`, ürünlerle ilgili CRUD işlemlerini gerçekleştiren HTTP isteklerini yöneten bir denetleyici sınıfıdır. `getAll`, `add`, `getByName`, `getByNameAndPrice`, ve `getById` metodları ile ürün verilerine erişim ve manipülasyon sağlar. Spring’in REST mimarisine uygun şekilde tasarlanmıştır.
 
-### AuthController Açıklama
+### AuthController
 
 ```java  
 @RestController  
@@ -792,6 +840,8 @@ public class AuthController {
 3. `@RequestMapping("api/v1/auth")`: Bu denetleyiciye gelen tüm isteklerin `api/v1/auth` yolunu kullanacağını belirtir.
 4. `@RequiredArgsConstructor`: Lombok tarafından tüm final alanlar için bir constructor oluşturur ve bu alanları inject eder.
 5. `private final AuthService authService;`: Kimlik doğrulama işlemlerini yöneten servis nesnesi. Spring tarafından otomatik olarak enjekte edilir.
+
+#### AuthController Detay
 
 #### Metodlar
 
@@ -825,7 +875,7 @@ public ResponseEntity<String> register(@RequestBody CreateUserRequest createUser
 
 `AuthController`, kullanıcı kimlik doğrulama işlemlerini gerçekleştiren HTTP isteklerini yöneten bir denetleyici sınıfıdır. `login` ve `register` metodları ile kullanıcı girişi ve kaydı için gerekli işlevselliği sağlar. Spring’in REST mimarisine uygun şekilde tasarlanmıştır.
 
-### UsersController Açıklama
+### UsersController
 
 ```java  
 @RestController  
@@ -844,989 +894,703 @@ public class UsersController {
 4. **@RequiredArgsConstructor**: Lombok tarafından tüm final alanlar için bir constructor oluşturur ve bu alanları inject eder.
 5. **private final UserService userService;**: Kullanıcı işlemlerini yöneten servis nesnesi. Spring tarafından otomatik olarak enjekte edilir.
 
+#### UsersController Detay
+
 ### Özet
 
 `UsersController`, kullanıcı ile ilgili HTTP isteklerini yöneten bir denetleyici sınıfıdır. `userService` aracılığıyla kullanıcı işlemleri ile ilgili işlevselliği sağlar. Spring’in REST mimarisine uygun şekilde tasarlanmıştır.
 
-### DTO Sınıfları
+## CORE
 
-**LoginRequest**
+### GlobalExceptionHandler
+### GlobalExceptionHandler Açıklama
+### GlobalExceptionHandler Detay
 
-```java @Getter @Setter @AllArgsConstructor @NoArgsConstructor public class LoginRequest {    
- @NotBlank private String email;    
-@NotBlank private String password;}   
-```   
-#### LoginRequest Açıklama
-
-1. `@NotBlank`: Alanın boş olamayacağını belirtir.
-2. `LoginRequest`: Giriş isteği için veri transfer nesnesi.
-
-**CreateProductDto ve ListProductDto**
-
-```java @Getter @Setter @NoArgsConstructor @AllArgsConstructor public class CreateProductDto implements Serializable {    
- @NotNull @NotBlank private String name;    
- @NotNull @PositiveOrZero private int stock;    
- @NotNull private BigDecimal unitPrice;    
-@NotNull @Positive private int categoryId;}   
-```   
-```java @Getter @Setter @NoArgsConstructor @AllArgsConstructor public class ListProductDto implements Serializable {    
-private int id; private String name; private BigDecimal unitPrice;}   
-```   
-#### CreateProductDto ve ListProductDto Açıklama
-
-1. `CreateProductDto`: Ürün oluşturma isteği için veri transfer nesnesi.
-2. `ListProductDto`: Ürün listeleme için veri transfer nesnesi.
-3. `@NotNull`, `@NotBlank`, `@PositiveOrZero`, `@Positive`: Alanların doğrulanmasını sağlar.
-
-**CreateUserRequest**
-
-```java @Getter @Setter @AllArgsConstructor @NoArgsConstructor public class CreateUserRequest {    
- @NotBlank private String email;    
- @NotBlank private String password;    
- @NotBlank private String name;    
- @NotBlank private String surname;    
-@NotBlank @Size(min = 11, max = 11) private String identityNo;}   
-```   
-#### CreateUserRequest Açıklama
-
-1. `CreateUserRequest`: Kullanıcı oluşturma isteği için veri transfer nesnesi.
-2. `@NotBlank`: Alanın boş olamayacağını belirtir.
-3. `@Size(min = 11, max = 11)`: Alanın uzunluğunu belirtir.
-
-### Mapper Sınıfları
-
-**ProductMapper**
-
-```java @Mapper public interface ProductMapper {    
- ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);    
- @Mapping(source = "stock", target = "unitsInStock") @Mapping(source = "categoryId", target = "category.id") Product productFromCreateDto(CreateProductDto dto);    
-ListProductDto productDtoFromProduct(Product product); List<ListProductDto> productDtoListFromProductList(List<Product> products);}   
-```   
-#### ProductMapper Açıklama
-
-1. `@Mapper`: MapStruct tarafından nesne dönüştürme işlemleri için kullanılır.
-2. `@Mapping`: Alanları eşleştirmek için kullanılır.
-3. `ProductMapper.INSTANCE`: MapStruct'ın mapper örneği.
-
-**UserMapper**
-
-```java @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE) public abstract class UserMapper {    
- @Autowired protected PasswordEncoder passwordEncoder;    
- @Mapping(target = "password", source = "password", qualifiedByName = "hashPassword") public abstract User userFromCreateRequest(CreateUserRequest request);    
-@Named("hashPassword") protected String hashPassword(String password) { return passwordEncoder.encode(password); }}   
-```   
-#### UserMapper Açıklama
-
-1. `componentModel = "spring"`: MapStruct bean'inin Spring konteyner tarafından yönetilmesini sağlar.
-2. `qualifiedByName`: Özel bir metot ile alanın dönüştürülmesini sağlar.
-3. `@Named("hashPassword")`: `hashPassword` metodunun özel olarak tanımlanmasını sağlar.
-
-### Core (Çekirdek) Konfigürasyon ve Servisler
-
-**RedisConfiguration**
-
-```java @Configuration public class RedisConfiguration {    
- @Bean public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) { RedisTemplate<String, Object> template = new RedisTemplate<>(); template.setConnectionFactory(connectionFactory); template.setKeySerializer(new StringRedisSerializer()); template.setValueSerializer(new GenericJackson2JsonRedisSerializer()); template.setHashKeySerializer(new StringRedisSerializer()); template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer()); return template; }    
-@Bean public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) { RedisCacheConfiguration configuration = RedisCacheConfiguration .defaultCacheConfig() .entryTtl(Duration.ofMinutes(30)); return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(configuration).build(); }}   
-```   
-#### RedisConfiguration Açıklama
-
-1. `@Configuration`: Bu sınıfın bir konfigürasyon sınıfı olduğunu belirtir.
-2. `@Bean`: Bir bean tanımlandığını belirtir.
-3. `RedisTemplate`: Redis ile veri alışverişini sağlayan yapı.
-4. `CacheManager`: Ön bellek yönetimi için kullanılır.
-
-#### Detay
-
-**SecurityConfig**
-
-```java @Configuration public class SecurityConfig {    
- @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }    
-@Bean public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception { http .csrf(AbstractHttpConfigurer::disable) .httpBasic(AbstractHttpConfigurer::disable) .authorizeHttpRequests(req -> req.anyRequest().permitAll()); return http.build(); }}   
-```   
-#### SecurityConfig Açıklama
-
-1. `@Configuration`: Bu sınıfın bir konfigürasyon sınıfı olduğunu belirtir.
-2. `@Bean`: Bir bean tanımlandığını belirtir.
-3. `PasswordEncoder`: Şifrelerin hashlenmesi için kullanılır.
-4. `SecurityFilterChain`: Uygulamanın güvenlik ayarlarını yapılandırır.
-
-
-**GlobalExceptionHandler**
-```java @RestControllerAdvice public class GlobalExceptionHandler {    
- @ExceptionHandler({ MethodArgumentNotValidException.class }) @ResponseStatus(HttpStatus.BAD_REQUEST) public Map<String, String> handleValidationException(MethodArgumentNotValidException exception) { Map<String, String> errors = new HashMap<>(); for (FieldError error : exception.getBindingResult().getFieldErrors()) { errors.put(error.getField(), error.getDefaultMessage()); } return errors; }    
- @ExceptionHandler({ BusinessException.class }) @ResponseStatus(HttpStatus.BAD_REQUEST) public BusinessExceptionResponse handleBusinessException(BusinessException exception) { return new BusinessExceptionResponse(exception.getMessage()); }    
-@ExceptionHandler({ RuntimeException.class }) @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) public String handleRuntimeException() { return "Bilinmedik hata"; }}   
-```   
-
-#### GlobalExceptionHandler Açıklama
-
-1. `@RestControllerAdvice`: Uygulama genelinde istisnaları yakalayıp işlemek için kullanılır.
-2. `@ExceptionHandler`: Belirli istisnaların işlenmesini sağlar.
-3. `handleValidationException`: Geçersiz giriş hatalarını yakalayıp yanıt döner.
-4. `handleBusinessException`: Özel iş istisnalarını yakalar ve yanıt döner.
-5. `handleRuntimeException`: Genel çalışma zamanı hatalarını yakalar ve yanıt döner.
-
-**BusinessException ve BusinessExceptionResponse**
-
-```java public class BusinessException extends RuntimeException {    
- public BusinessException(String message) { super(message); }}    
- @Getter @Setter @NoArgsConstructor @AllArgsConstructor public class BusinessExceptionResponse {    
-private String message;}   
-```   
-#### BusinessException ve BusinessExceptionResponse Açıklama
-
-1. `BusinessException`: Özel iş istisnalarını tanımlar.
-2. `BusinessExceptionResponse`: İş istisnalarına yönelik yanıt nesnesidir.
-
-**JwtService**
-
-```java @Service public class JwtService {    
- @Value("${jwt.expiration}") private Long EXPIRATION;    
- @Value("${jwt.secret_key}") private String SECRET_KEY;    
- public String generateToken(String username) { return Jwts.builder() .issuedAt(new Date(System.currentTimeMillis())) .expiration(new Date(System.currentTimeMillis() + EXPIRATION)) .subject(username) .signWith(getSignKey()) .compact(); }    
-private Key getSignKey() { byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY); return Keys.hmacShaKeyFor(keyBytes); }}   
-```   
-#### JwtService Açıklama
-
-1. `@Service`: Bu sınıfın bir servis bileşeni olduğunu belirtir.
-2. `@Value`: Konfigürasyon dosyasından değerleri okur.
-3. `generateToken`: Kullanıcı adı ile bir JWT oluşturur.
-4. `getSignKey`: JWT imzalarken kullanılacak anahtarı döner.
-
-### 3. İlişkiler
-
-- **User ve UserRepository**: `User` entity sınıfı, `UserRepository` aracılığıyla veritabanı işlemlerini gerçekleştirir.
-- **Product ve ProductRepository**: `Product` entity sınıfı, `ProductRepository` aracılığıyla veritabanı işlemlerini gerçekleştirir.
-- **Category ve Product**: `Category` entity sınıfı, birden fazla ürüne sahip olabilir (`OneToMany`), her ürün bir kategoriye aittir (`ManyToOne`).
-- **UserService ve UserServiceImpl**: Kullanıcı işlemlerini yönetir.
-- **ProductService ve ProductServiceImpl**: Ürün işlemlerini yönetir.
-- **UserMapper ve UserServiceImpl**: `CreateUserRequest` nesnesini `User` nesnesine dönüştürmek için kullanılır.
-- **ProductMapper ve ProductServiceImpl**: Ürün DTO'larını ve entity'lerini dönüştürmek için kullanılır.
-
-### 4. Yapılar
-
-#### Redis
-
-Redis, hızlı veri erişimi ve önbellekleme amacıyla kullanılır. `RedisConfiguration` sınıfı, RedisTemplate ve CacheManager bean'lerini tanımlar.
-
-#### JWT
-
-JWT (JSON Web Token), kullanıcıların kimlik doğrulaması için kullanılır. `JwtService` sınıfı, token oluşturma ve imzalama işlemlerini gerçekleştirir.
-
-#### Exception Handler
-
-`GlobalExceptionHandler` sınıfı, uygulama genelinde oluşan istisnaları yakalayıp işlemek için kullanılır. Özel iş kuralları hataları için `BusinessException` sınıfı tanımlanmıştır.
-
-#### Validation
-
-DTO sınıflarında kullanılan `@NotBlank`, `@NotNull`, `@PositiveOrZero`, `@Size` gibi doğrulama anotasyonları, alanların doğrulanmasını sağlar.
-
-#### Annotations
-
-- **@Entity, @Table, @Id, @GeneratedValue, @Column**: JPA entity sınıfları için kullanılır.
-- **@Getter, @Setter, @AllArgsConstructor, @NoArgsConstructor**: Lombok kütüphanesi ile otomatik metod oluşturma.
-- **@Mapper, @Mapping**: MapStruct ile nesne dönüştürme işlemleri.
-- **@Service, @Configuration, @RestControllerAdvice, @Bean**: Spring bileşenleri ve konfigürasyonları.
-- **@ExceptionHandler**: Özel istisna işleyicileri.
-
-#### MapStruct
-
-MapStruct, DTO ve entity sınıfları arasında dönüştürme işlemlerini kolaylaştırır. `ProductMapper` ve `UserMapper` sınıfları bu amaçla kullanılır.
-
-### Sonuç
-
-Proje, kullanıcı ve ürün yönetimi işlemlerini Spring Boot ve çeşitli kütüphaneler kullanarak gerçekleştirmektedir. Projenin genel akışını, sınıflar arası ilişkileri ve kullanılan yapıların işlevlerini detaylı bir şekilde açıklamış olduk. Eğer daha spesifik bir sorunuz veya anlamadığınız bir kısım varsa, lütfen belirtin.
-    
----   
-## Lombok
-
-Lombok, Java uygulamalarında boilerplate (tekrarlayan) kodları azaltmak için kullanılan bir kütüphanedir. Lombok, sınıf tanımlarına anotasyonlar ekleyerek getter ve setter metodları, `toString()`, `equals()`, `hashCode()`, yapıcı metodlar gibi yaygın olarak kullanılan kodları otomatik olarak oluşturur.
-
-### Lombok Anotasyonları
-
-- **@Getter ve @Setter**: Alanlar için getter ve setter metodlarını oluşturur.
-
-```java
-import lombok.Getter;
-import lombok.Setter;
-
-public class Person {
-    @Getter @Setter private String name;
-    private int age;
-}
-```
-
-- **@ToString**: Sınıf için `toString()` metodunu oluşturur.
-
-```java
-import lombok.ToString;
-
-@ToString
-public class Person {
-    private String name;
-    private int age;
-}
-```
-
-- **@EqualsAndHashCode**: Sınıf için `equals()` ve `hashCode()` metodlarını oluşturur.
-
-```java
-import lombok.EqualsAndHashCode;
-
-@EqualsAndHashCode
-public class Person {
-    private String name;
-    private int age;
-}
-```
-
-- **@AllArgsConstructor ve @NoArgsConstructor**: Tüm alanlar için yapıcı metod ve parametresiz yapıcı metod oluşturur.
-
-```java
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
-public class Person {
-    private String name;
-    private int age;
-}
-```
-
-### Sonuç
-
-Lombok, tekrarlayan kodları azaltarak geliştiricilerin daha temiz ve bakımı kolay kod yazmasını sağlar.
-
----
-
-## MapStruct
-
-MapStruct, Java nesneleri arasında tür güvenli ve yüksek performanslı dönüşümler gerçekleştiren bir araçtır. Özellikle DTO (Data Transfer Object) ve entity dönüşümlerinde sıkça kullanılır.
-
-### Kullanımı
-
-- **Maven Bağımlılıkları**:
-
-```xml
-<dependency>
-    <groupId>org.mapstruct</groupId>
-    <artifactId>mapstruct</artifactId>
-    <version>1.4.2.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.mapstruct</groupId>
-    <artifactId>mapstruct-processor</artifactId>
-    <version>1.4.2.Final</version>
-</dependency>
-```
-
-- **DTO ve Entity Dönüşümü**:
-
-```java
-@Mapper
-public interface CarMapper {
-    CarMapper INSTANCE = Mappers.getMapper(CarMapper.class);
-
-    @Mapping(source = "numberOfSeats", target = "seatCount")
-    CarDto carToCarDto(Car car);
-}
-```
-
-### Sonuç
-
-MapStruct, manuel dönüşüm kodları yazmayı ortadan kaldırır ve dönüşüm işlemlerini basit ve verimli hale getirir.
-
----
-
-## Spring IoC (Inversion of Control)
-
-Spring IoC, nesnelerin oluşturulması, yönetilmesi ve bağımlılıklarının sağlanması işlemlerini merkezi bir yerden yönetmek için kullanılan bir prensiptir.
-
-### IoC ve DI (Dependency Injection)
-
-- **IoC Container**: Nesnelerin yaşam döngüsünü ve bağımlılıklarını yönetir.
-- **Dependency Injection**: Nesnelerin ihtiyaç duyduğu bağımlılıkları dışarıdan sağlar.
-
-### Örnek Kullanım
-
-- **Bean Tanımı**:
+### RedisConfiguration
 
 ```java
 @Configuration
-public class AppConfig {
+public class RedisConfiguration {
+
+  @Bean
+  public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    RedisTemplate<String, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(connectionFactory);
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+    template.setHashKeySerializer(new StringRedisSerializer());
+    template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+    return template;
+  }
+
+  @Bean
+  public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+    RedisCacheConfiguration configuration = RedisCacheConfiguration
+            .defaultCacheConfig()
+            .entryTtl(Duration.ofMinutes(30));
+    return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(configuration).build();
+  }
+}
+```
+
+### RedisConfiguration Açıklamala
+
+- **@Configuration**: Bu sınıfın bir konfigürasyon sınıfı olduğunu belirtir.
+- **@Bean**: Metodun bir Spring bean döndürdüğünü belirtir.
+- **RedisTemplate**: Redis işlemleri için kullanılır.
+- **RedisConnectionFactory**: Redis bağlantı fabrikası.
+- **StringRedisSerializer**: Redis anahtarlarını serileştirmek için kullanılır.
+- **GenericJackson2JsonRedisSerializer**: Redis değerlerini serileştirmek için kullanılır.
+- **CacheManager**: Spring cache yönetimini sağlar.
+- **RedisCacheConfiguration**: Redis cache konfigürasyonu.
+- **Duration**: Süreyi temsil eden sınıf.
+
+### RedisConfiguration Detaylar
+
+1. **Class Level Annotations**:
+  - `@Configuration`: Bu sınıfın Spring konfigürasyon dosyası olduğunu belirtir.
+
+2. **Methods**:
+  - **redisTemplate()**:
+    ```java
     @Bean
-    public MyService myService() {
-        return new MyServiceImpl();
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+      RedisTemplate<String, Object> template = new RedisTemplate<>();
+      template.setConnectionFactory(connectionFactory);
+      template.setKeySerializer(new StringRedisSerializer());
+      template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+      template.setHashKeySerializer(new StringRedisSerializer());
+      template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+      return template;
     }
-}
-```
+    ```
+    - `@Bean`: Metodun Spring tarafından yönetilen bir bean olduğunu belirtir.
+    - `RedisTemplate<String, Object> template = new RedisTemplate<>();`: RedisTemplate nesnesi oluşturur.
+    - `template.setConnectionFactory(connectionFactory);`: Redis bağlantı fabrikasını ayarlar.
+    - `template.setKeySerializer(new StringRedisSerializer());`: Anahtarları String olarak serileştirir.
+    - `template.setValueSerializer(new GenericJackson2JsonRedisSerializer());`: Değerleri JSON formatında serileştirir.
+    - `template.setHashKeySerializer(new StringRedisSerializer());`: Hash anahtarlarını String olarak serileştirir.
+    - `template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());`: Hash değerlerini JSON formatında serileştirir.
+    - `return template;`: RedisTemplate nesnesini döner.
 
-- **Bean Kullanımı**:
-
-```java
-@Service
-public class MyServiceConsumer {
-    private final MyService myService;
-
-    @Autowired
-    public MyServiceConsumer(MyService myService) {
-        this.myService = myService;
+  - **cacheManager()**:
+    ```java
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+      RedisCacheConfiguration configuration = RedisCacheConfiguration
+              .defaultCacheConfig()
+              .entryTtl(Duration.ofMinutes(30));
+      return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(configuration).build();
     }
-}
-```
-
-### Sonuç
-
-Spring IoC, uygulamalarda bağımlılık yönetimini ve nesne oluşturma süreçlerini basitleştirir ve merkezi bir şekilde yönetir.
+    ```
+    - `@Bean`: Metodun Spring tarafından yönetilen bir bean olduğunu belirtir.
+    - `RedisCacheConfiguration configuration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(30));`: Varsayılan cache konfigürasyonunu oluşturur ve 30 dakika süre belirler.
+    - `return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(configuration).build();`: RedisCacheManager nesnesini oluşturur ve döner.
 
 ---
 
-## Spring Controller
-
-Spring Controller'lar, HTTP isteklerini karşılamak ve uygun yanıtları döndürmek için kullanılır. MVC (Model-View-Controller) yapısının bir parçasıdır.
-
-### Örnek Kullanım
-
-- **Basit Bir Controller**:
+### SecurityConfig
 
 ```java
-@RestController
-@RequestMapping("/api")
-public class MyController {
-    @GetMapping("/hello")
-    public String sayHello() {
-        return "Hello, World!";
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+  private final UserService userService;
+  private final JwtFilter jwtFilter;
+  
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setPasswordEncoder(passwordEncoder());
+    provider.setUserDetailsService(userService);
+    return provider;
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+  }
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+      .csrf(AbstractHttpConfigurer::disable)
+      .httpBasic(AbstractHttpConfigurer::disable)
+      .authorizeHttpRequests(req -> req
+        .requestMatchers(HttpMethod.POST, "/api/v1/products/**").authenticated()
+        .anyRequest().permitAll()
+      )
+      .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+  }
+}
+```
+
+### SecurityConfig Açıklama
+
+- **@Configuration**: Bu sınıfın bir konfigürasyon sınıfı olduğunu belirtir.
+- **@RequiredArgsConstructor**: Lombok tarafından, final alanlar için bir constructor oluşturur ve bu alanları inject eder.
+- **@Bean**: Metodun bir Spring bean döndürdüğünü belirtir.
+- **PasswordEncoder**: Şifreleme işlemleri için kullanılır.
+- **BCryptPasswordEncoder**: Şifreleri BCrypt algoritmasıyla şifrelemek için kullanılır.
+- **AuthenticationProvider**: Kullanıcı doğrulaması için kullanılır.
+- **DaoAuthenticationProvider**: Kullanıcı detaylarını ve şifrelerini doğrulayan sağlayıcı.
+- **AuthenticationManager**: AuthenticationManager konfigürasyonunu sağlar.
+- **HttpSecurity**: HTTP güvenlik konfigürasyonunu sağlar.
+- **csrf(AbstractHttpConfigurer::disable)**: CSRF korumasını devre dışı bırakır.
+- **httpBasic(AbstractHttpConfigurer::disable)**: HTTP Basic Authentication'ı devre dışı bırakır.
+- **authorizeHttpRequests**: HTTP isteklerinin yetkilendirilmesi için kullanılır.
+- **requestMatchers**: Belirli URL desenlerine sahip istekleri eşleştirir.
+- **addFilterBefore**: Belirtilen filtreyi başka bir filtrenin öncesinde ekler.
+- **UsernamePasswordAuthenticationFilter**: Kullanıcı adı ve şifre ile kimlik doğrulama işlemlerini gerçekleştirir.
+
+### SecurityConfig Detay
+
+1. **Class Level Annotations**:
+  - `@Configuration`: Bu sınıfın Spring konfigürasyon dosyası olduğunu belirtir.
+  - `@RequiredArgsConstructor`: Lombok tarafından oluşturulan bir constructor ile final alanların inject edilmesini sağlar.
+
+2. **Fields**:
+  - `private final UserService userService;`: Kullanıcı servisi. Kullanıcı verilerini yönetir.
+  - `private final JwtFilter jwtFilter;`: JWT filtrelemesi. JWT tokenleri doğrular.
+
+3. **Methods**:
+  - **passwordEncoder()**:
+    ```java
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+      return new BCryptPasswordEncoder();
     }
-}
-```
+    ```
+    - `@Bean`: Metodun Spring tarafından yönetilen bir bean olduğunu belirtir.
+    - `BCryptPasswordEncoder`: Şifreleri BCrypt algoritmasıyla şifrelemek için kullanılır.
 
-- **PathVariable ve RequestParam Kullanımı**:
+  - **authenticationProvider()**:
+    ```java
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+      DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+      provider.setPasswordEncoder(passwordEncoder());
+      provider.setUserDetailsService(userService);
+      return provider;
+    }
+    ```
+    - `DaoAuthenticationProvider provider`: Kullanıcı detaylarını ve şifrelerini doğrulayan sağlayıcı.
+    - `provider.setPasswordEncoder(passwordEncoder());`: Şifreleme sağlayıcısını ayarlar.
+    - `provider.setUserDetailsService(userService);`: Kullanıcı servisini ayarlar.
+    - `return provider;`: Sağlayıcıyı döndürür.
 
-```java
-@GetMapping("/greet/{name}")
-public String greet(@PathVariable String name) {
-    return "Hello, " + name;
-}
+  - **authenticationManager()**:
+    ```java
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+      return config.getAuthenticationManager();
+    }
+    ```
+    - `AuthenticationManager`: AuthenticationManager konfigürasyonunu sağlar.
+    - `return config.getAuthenticationManager();`: Konfigürasyon dosyasından AuthenticationManager'ı döner.
 
-@GetMapping("/greet")
-public String greetWithRequestParam(@RequestParam String name) {
-    return "Hello, " + name;
-}
-```
-
-### Sonuç
-
-Spring Controller'lar, web uygulamalarında kullanıcı etkileşimlerini yönetmek için kritik öneme sahiptir. MVC yapısı sayesinde uygulamaların bakımı ve genişletilmesi kolaylaşır.
+  - **securityFilterChain()**:
+    ```java
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+      http
+        .csrf(AbstractHttpConfigurer::disable)
+        .httpBasic(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(req -> req
+          .requestMatchers(HttpMethod.POST, "/api/v1/products/**").authenticated()
+          .anyRequest().permitAll()
+        )
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+      return http.build();
+    }
+    ```
+    - `csrf(AbstractHttpConfigurer::disable)`: CSRF korumasını devre dışı bırakır.
+    - `httpBasic(AbstractHttpConfigurer::disable)`: HTTP Basic Authentication'ı devre dışı bırakır.
+    - `authorizeHttpRequests(req -> req.anyRequest().permitAll())`: Tüm isteklerin yetkilendirilmesini sağlar.
+    - `requestMatchers(HttpMethod.POST, "/api/v1/products/**").authenticated()`: Belirtilen URL desenlerine sahip isteklerin doğrulanmasını sağlar.
+    - `addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)`: JWT filtresini, UsernamePasswordAuthenticationFilter'dan önce ekler.
+    - `return http.build();`: HttpSecurity nesnesini oluşturur ve döner.
 
 ---
 
-## SpringBoot (Genel)
-
-Spring Boot, Spring Framework üzerine inşa edilmiş, mikro hizmet mimarisine uygun, hızlı ve kolay bir şekilde üretim düzeyinde uygulamalar geliştirmeyi sağlayan bir araçtır.
-
-### Özellikleri
-
-- **Hızlı Başlangıç**: Spring Boot, minimum konfigürasyonla projelere hızlı bir başlangıç yapmanızı sağlar.
-- **Yerleşik Sunucu**: Yerleşik Tomcat, Jetty veya Undertow sunucuları ile gelir.
-- **Otomatik Konfigürasyon**: Sık kullanılan kütüphaneler ve Spring modülleri için otomatik konfigürasyon sağlar.
-- **Bağımlılık Yönetimi**: Spring Boot Starter'lar ile bağımlılık yönetimi ve versiyon uyumluluğu sağlar.
-
-### Örnek Kullanım
-
-1. **Spring Boot Projesi Oluşturma**:
-
-```bash
-spring init --dependencies=web my-project
-cd my-project
-```
-
-2. **Ana Uygulama Sınıfı**:
+### JwtFilter
 
 ```java
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-public class MyApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(MyApplication.class, args);
-    }
-}
-```
-
-3. **Basit Bir REST Controller**:
-
-```java
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class HelloController {
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello, World!";
-    }
-}
-```
-
-### Sonuç
-
-Spring Boot, mikro hizmet mimarisi ve modern uygulama geliştirme ihtiyaçlarını karşılayan güçlü bir araçtır. Hızlı başlangıç, otomatik konfigürasyon ve yerleşik sunucular gibi özellikleriyle geliştiricilerin işini büyük ölçüde kolaylaştırır.
-
----
-
-## Request-Response
-
-Spring uygulamalarında, HTTP istekleri (request) ve yanıtları (response) nasıl işlenir.
-
-### Request Handling
-
-- **HTTP GET İstekleri**:
-
-```java
-@RestController
-public class MyController {
-    @GetMapping("/api/data")
-    public String getData() {
-        return "Data";
-    }
-}
-```
-
-- **HTTP POST İstekleri**:
-
-```java
-@RestController
-public class MyController {
-    @PostMapping("/api/data")
-    public ResponseEntity<String> postData(@RequestBody String data) {
-        return ResponseEntity.ok("Received: " + data);
-    }
-}
-```
-
-### Response Handling
-
-- **Yanıt Döndürme**:
-
-```java
-@RestController
-public class MyController {
-    @GetMapping("/api/data")
-    public ResponseEntity<String> getData() {
-        return new ResponseEntity<>("Data", HttpStatus.OK);
-    }
-}
-```
-
-### Sonuç
-
-Request-Response yapısı, web uygulamalarında istemci ve sunucu arasındaki iletişimi yönetir. Spring, bu süreçleri kolaylaştırır ve esnek bir yapı sunar.
-
----
-
-## Redis
-
-Redis, in-memory (bellek içi) bir veri tabanı olup, yüksek performanslı veri depolama ve erişim sağlar.
-
-### Redis Kullanımı
-
-- **Bağlantı Konfigürasyonu**:
-
-```properties
-spring.redis.host=localhost
-spring.redis.port=6379
-```
-
-- **RedisTemplate Kullanımı**:
-
-```java
-@Service
-public class RedisService {
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
-    public void save(String key, Object value) {
-        redisTemplate.opsForValue().set(key, value);
-    }
-
-    public Object find(String key) {
-        return redisTemplate.opsForValue().get(key);
-    }
-}
-```
-
-### Sonuç
-
-Redis, yüksek hızlı veri erişimi ve önbellekleme için güçlü bir araçtır. Spring, Redis ile entegrasyonu kolaylaştırır ve esneklik sağlar.
-
----
-
-## Mapping
-
-Spring uygulamalarında veri transferi ve iş kuralları için DTO'lar ve entity'ler arasında nasıl dönüşüm yapılır.
-
-### DTO ve Entity Dönüşümü
-
-- **Entity**:
-
-```java
-public class User {
-    private Long id;
-    private String name;
-    private String email;
-}
-```
-
-- **DTO**:
-
-```java
-public class UserDTO {
-    private Long id;
-    private String name;
-}
-```
-
-- **Mapper**:
-
-```java
-public class UserMapper {
-    public UserDTO toDTO(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setName(user.getName());
-        return dto;
-    }
-
-    public User toEntity(UserDTO dto) {
-        User user = new User();
-        user.setId(dto.getId());
-        user.setName(dto.getName());
-        return user;
-    }
-}
-```
-
-### Sonuç
-
-Mapping, veri transferi ve iş kuralları için önemlidir. DTO ve entity dönüşümleri, veri güvenliği ve iş kurallarının uygulanması açısından kritik öneme sahiptir.
-
----
-
-## Validations
-
-Spring uygulamalarında veri doğrulama işlemleri nasıl gerçekleştirilir.
-
-### Anotasyonlar ile Doğrulama
-
-- **Entity**:
-
-```java
-import javax.validation.constraints.NotEmpty;
-
-public class User {
-    @NotEmpty(message = "Name cannot be empty")
-    private String name;
-    private String email;
-}
-```
-
-- **Controller**:
-
-```java
-@RestController
-public class UserController {
-    @PostMapping("/users")
-    public ResponseEntity<String> createUser(@Valid @RequestBody User user) {
-        return ResponseEntity.ok("User is valid");
-    }
-}
-```
-
-### Custom Validator
-
-- **Custom Annotation**:
-
-```java
-@Target({ ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = CustomValidator.class)
-public @interface CustomConstraint {
-    String message() default "Invalid value";
-    Class<?>[] groups() default {};
-    Class<? extends Payload>[] payload() default {};
-}
-```
-
-- **Validator**:
-
-```java
-public class CustomValidator implements ConstraintValidator<CustomConstraint, String> {
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && value.startsWith("A");
-    }
-}
-```
-
-### Sonuç
-
-Validations, veri bütünlüğünü ve iş kurallarının uygulanmasını sağlar. Spring, basit ve gelişmiş doğrulama mekanizmaları sunar.
-
----
-
-## Global Exceptions
-
-Spring uygulamalarında global exception handling nasıl gerçekleştirilir.
-
-### @ControllerAdvice ile Global Exception Handling
-
-- **Global Exception Handler**:
-
-```java
-@ControllerAdvice
-public class GlobalExceptionHandler {
-    @ExceptionHandler(value = { Exception.class })
-    public ResponseEntity<Object> handleException(Exception ex) {
-        return new ResponseEntity<>("An error occurred: " + ex.getMessage(),
-            HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-```
-
-### Özel Exception Sınıfları
-
-- **Custom Exception**:
-
-```java
-public class CustomException extends RuntimeException {
-    public CustomException(String message) {
-        super(message);
-    }
-}
-```
-
-- **Exception Handler**:
-
-```java
-@ControllerAdvice
-public class CustomExceptionHandler {
-    @ExceptionHandler(value = { CustomException.class })
-    public ResponseEntity<Object> handleCustomException(CustomException ex) {
-        return new ResponseEntity<>("Custom error: " + ex.getMessage(),
-            HttpStatus.BAD_REQUEST);
-    }
-}
-```
-
-### Sonuç
-
-Global exceptions, uygulama genelinde tutarlı ve merkezi bir hata yönetimi sağlar. Spring, bu süreci kolaylaştıran güçlü araçlar sunar.
-
----
-
-## Business Rules
-
-Spring uygulamalarında iş kuralları nasıl uygulanır.
-
-### Service Katmanı ile İş Kuralları
-
-- **Service**:
-
-```java
-@Service
-public class UserService {
-    public void createUser(User user) {
-        if (user.getName().isEmpty()) {
-            throw new CustomException("Name cannot be empty");
-        }
-        // İş kuralları uygulanır
-    }
-}
-```
-
-### AOP (Aspect-Oriented Programming) ile İş Kuralları
-
-- **Aspect**:
-
-```java
-@Aspect
 @Component
-public class LoggingAspect {
-    @Before("execution(* com.example.service.UserService.*(..))")
-    public void logBefore(JoinPoint joinPoint) {
-        System.out.println("Before method: " + joinPoint.getSignature().getName());
+@RequiredArgsConstructor
+public class JwtFilter extends OncePerRequestFilter {
+
+  private final JwtService jwtService;
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest request,
+                                  HttpServletResponse response,
+                                  FilterChain filterChain) throws ServletException, IOException {
+    String jwtHeader = request.getHeader("Authorization");
+
+    if(jwtHeader != null)
+    {
+      // JWT'i doğrula
+      String jwt = jwtHeader.substring(7); // bearer abc
+
+      Boolean isTokenValid = jwtService.validateToken(jwt);
+
+      if(isTokenValid)
+      {
+         // Spring Security'e giriş yapıldığını haber ver.
+
+        // TODO: roller
+        // - Spring Security Boilerplate
+        UsernamePasswordAuthenticationToken token = new
+                UsernamePasswordAuthenticationToken(jwtService.extractUsername(jwt), null, null);
+
+        token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(token);
+        // -
+      }
     }
+
+    filterChain.doFilter(request,response); // görevi sonraki zincir halkasına aktar.
+  }
 }
 ```
 
-### Sonuç
+### JwtFilter Açıklama
 
-Business rules, uygulamanın iş mantığını ve veri bütünlüğünü sağlar. Service katmanı ve AOP, bu kuralların uygulanmasını kolaylaştırır.
+- **@Component**: Bu sınıfın bir Spring bileşeni olduğunu belirtir.
+- **@RequiredArgsConstructor**: Lombok tarafından, final alanlar için bir constructor oluşturur ve bu alanları inject eder.
+- **OncePerRequestFilter**: Her istek için bir defa çalışacak olan bir filtre sağlar.
+- **HttpServletRequest**: HTTP isteği ile ilgili bilgileri temsil eder.
+- **HttpServletResponse**: HTTP yanıtı ile ilgili bilgileri temsil eder.
+- **FilterChain**: Filtreler arasında geçiş yapmak için kullanılır.
+- **validateToken()**: JWT'nin geçerliliğini kontrol eder.
+- **UsernamePasswordAuthenticationToken**: Kullanıcı adı ve şifre ile kimlik doğrulama işlemlerini gerçekleştiren bir token.
+- **SecurityContextHolder**: Güvenlik bağlamını tutar ve yönetir.
 
----
-## JDBC-JPA
+### JwtFilter Detay
 
-Spring uygulamalarında veri erişimi için JDBC ve JPA nasıl kullanılır.
+1. **Class Level Annotations**:
+  - `@Component`: Bu sınıfın Spring bileşeni olduğunu belirtir.
+  - `@RequiredArgsConstructor`: Lombok tarafından oluşturulan bir constructor ile final alanların inject edilmesini sağlar.
 
-### JDBC
+2. **Fields**:
+  - `private final JwtService jwtService;`: JWT işlemleri için gerekli olan servis. JWT tokenlerini doğrulamak için kullanılır.
 
-- **JdbcTemplate Kullanımı**:
-
-```java
-@Service
-public class UserService {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    public List<User> findAll() {
-        return jdbcTemplate.query("SELECT * FROM users", new UserRowMapper());
-    }
-}
-
-public class UserRowMapper implements RowMapper<User> {
+3. **Methods**:
+  - **doFilterInternal()**:
+    ```java
     @Override
-    public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("id"));
-        user.setName(rs.getString("name"));
-        user.setEmail(rs.getString("email"));
-        return user;
-    }
-}
-```
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+    ```
+    - `protected void doFilterInternal(...)`: Bu metod, istek ve yanıt üzerinde işlem yapar. Her istek için bir defa çağrılır.
 
-### JPA
+  - **Authorization Header**:
+    ```java
+    String jwtHeader = request.getHeader("Authorization");
+    ```
+    - `request.getHeader("Authorization")`: İstekten "Authorization" başlığını alır. JWT tokeni bu başlıkta taşınır.
 
-- **Entity Tanımı**:
+  - **Token Extraction**:
+    ```java
+    if(jwtHeader != null) {
+      String jwt = jwtHeader.substring(7); // bearer abc
+    ```
+    - `jwtHeader.substring(7)`: "Bearer " kelimesinden sonraki kısmı alır. Bu durumda JWT tokenini elde eder.
 
-```java
-@Entity
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String email;
-}
-```
+  - **Token Validation**:
+    ```java
+    Boolean isTokenValid = jwtService.validateToken(jwt);
+    ```
+    - `jwtService.validateToken(jwt)`: JWT'nin geçerliliğini kontrol eder. Eğer geçerliyse `true`, değilse `false` döner.
 
-- **Repository Kullanımı**:
+  - **Setting Authentication**:
+    ```java
+    if(isTokenValid) {
+      UsernamePasswordAuthenticationToken token = new
+              UsernamePasswordAuthenticationToken(jwtService.extractUsername(jwt), null, null);
+    ```
+    - `UsernamePasswordAuthenticationToken`: Geçerli token için bir kimlik doğrulama tokeni oluşturur. JWT'den kullanıcı adını çıkararak ayarlar.
 
-```java
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-}
-```
+  - **Details Setting**:
+    ```java
+    token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    ```
+    - `setDetails(...)`: İstekle ilgili detayları ayarlar.
 
-- **Service Kullanımı**:
+  - **Security Context Update**:
+    ```java
+    SecurityContextHolder.getContext().setAuthentication(token);
+    ```
+    - `SecurityContextHolder.getContext().setAuthentication(token)`: Güvenlik bağlamını günceller ve kullanıcıyı doğrular.
+
+  - **Chain Filter**:
+    ```java
+    filterChain.doFilter(request,response);
+    ```
+    - `filterChain.doFilter(...)`: İsteği bir sonraki filtreye veya hedefe aktarır.
+
+---
+
+### JwtService
 
 ```java
 @Service
-public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+public class JwtService
+{
+  @Value("${jwt.expiration}")
+  private Long EXPIRATION;
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+  @Value("${jwt.secret_key}")
+  private String SECRET_KEY;
+
+  public String generateToken(String userName) {
+    return Jwts
+            .builder()
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
+            .subject(userName)
+            .signWith(getSignKey())
+            .compact();
+  }
+
+  public Boolean validateToken(String token)
+  {
+    try {
+      return getClaimsFromToken(token).getExpiration().after(new Date());
     }
-}
-```
-
-### Sonuç
-
-JDBC ve JPA, veri erişiminde farklı ihtiyaçlara cevap veren güçlü araçlardır. Spring, bu araçlarla entegrasyonu kolaylaştırır ve esneklik sağlar.
-
----
-
-## application.properties - yaml
-
-Spring Boot uygulamalarında konfigürasyon ayarları için `application.properties` ve `application.yml` dosyaları nasıl kullanılır.
-
-### application.properties
-
-- **Örnek Konfigürasyon**:
-
-```properties
-server.port=8080
-spring.datasource.url=jdbc:mysql://localhost:3306/mydb
-spring.datasource.username=root
-spring.datasource.password=secret
-```
-
-### application.yml
-
-- **Örnek Konfigürasyon**:
-
-```yaml
-server:
-  port: 8080
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/mydb
-    username: root
-    password: secret
-```
-
-### Sonuç
-
-`application.properties` ve `application.yml`, Spring Boot uygulamalarında konfigürasyon yönetimini esnek ve okunabilir hale getirir.
-
----
-
-## Derived Method Naming, JPQL, Native SQL
-
-Spring Data JPA'da türetilmiş metod isimlendirme, JPQL ve native SQL sorguları nasıl kullanılır.
-
-### Derived Method Naming
-
-- **Repository**:
-
-```java
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    List<User> findByName(String name);
-    List<User> findByEmail(String email);
-}
-```
-
-### JPQL
-
-- **Örnek JPQL Sorgusu**:
-
-```java
-@Query("SELECT u FROM User u WHERE u.email = ?1")
-List<User> findByEmail(String email);
-```
-
-### Native SQL
-
-- **Örnek Native SQL Sorgusu**:
-
-```java
-@Query(value = "SELECT * FROM users WHERE email = ?1", nativeQuery = true)
-List<User> findByEmailNative(String email);
-```
-
-### Sonuç
-
-Spring Data JPA, veri sorgulama işlemlerini kolaylaştıran türetilmiş metod isimlendirme, JPQL ve native SQL desteği sunar.
-
----
-
-## MicroService
-
-Mikro hizmetler, büyük ve karmaşık uygulamaların daha küçük, bağımsız ve yönetilebilir parçalara bölünmesini sağlayan bir mimari yaklaşımdır.
-
-### Mikro Hizmetlerin Özellikleri
-
-- **Bağımsız Dağıtım**: Her bir hizmet bağımsız olarak dağıtılabilir ve yönetilebilir.
-- **Tek Sorumluluk İlkesi**: Her bir hizmet belirli bir işlevi yerine getirir.
-- **Teknoloji Bağımsızlığı**: Her bir hizmet farklı teknolojilerle geliştirilebilir.
-
-### Örnek Mikro Hizmet Yapısı
-
-- **Kullanıcı Hizmeti**:
-
-```java
-@RestController
-@RequestMapping("/users")
-public class UserController {
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        // Kullanıcıyı veritabanından al
+    catch(Exception e)
+    {
+      return false;
     }
+  }
+
+  public String extractUsername(String token)
+  {
+    return getClaimsFromToken(token).getSubject();
+  }
+
+  private Claims getClaimsFromToken(String token)
+  {
+    SecretKey key = (SecretKey) getSignKey();
+    return Jwts
+            .parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+  }
+
+  private Key getSignKey() {
+    byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
+    return Keys.hmacShaKeyFor(keyBytes);
+  }
 }
 ```
 
-- **Sipariş Hizmeti**:
+### JwtService Açıklama
+
+- **@Service**: Bu sınıfın bir servis bileşeni olduğunu belirtir.
+- **@Value**: Uygulama ayarlarından değerleri almak için kullanılır.
+- **Jwts**: JWT (JSON Web Token) oluşturmak ve doğrulamak için kullanılan bir sınıf.
+- **Claims**: JWT içindeki yükleri temsil eder.
+- **SecretKey**: JWT imzalarken kullanılan gizli anahtar.
+- **Key**: Anahtar türündeki nesneleri temsil eder.
+- **Date**: Tarih ve saat ile ilgili işlemleri yönetmek için kullanılır.
+
+### JwtService Detay
+
+1. **Class Level Annotations**:
+  - `@Service`: Bu sınıfın Spring servis bileşeni olduğunu belirtir.
+
+2. **Fields**:
+  - `@Value("${jwt.expiration}")`: Uygulama ayarlarından JWT'nin geçerlilik süresini alır.
+  - `@Value("${jwt.secret_key}")`: Uygulama ayarlarından JWT imzalamak için kullanılan gizli anahtarı alır.
+
+3. **Methods**:
+  - **generateToken()**:
+    ```java
+    public String generateToken(String userName) {
+      return Jwts
+              .builder()
+              .issuedAt(new Date(System.currentTimeMillis()))
+              .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
+              .subject(userName)
+              .signWith(getSignKey())
+              .compact();
+    }
+    ```
+    - `Jwts.builder()`: Yeni bir JWT oluşturmak için bir builder döner.
+    - `issuedAt(...)`: Tokenin oluşturulma zamanını ayarlar.
+    - `expiration(...)`: Tokenin geçerlilik süresini ayarlar.
+    - `subject(userName)`: Tokenin konu bilgisi olarak kullanıcı adını ayarlar.
+    - `signWith(getSignKey())`: Tokeni imzalamak için gizli anahtarı kullanır.
+    - `compact()`: Tokeni oluşturur ve döner.
+
+  - **validateToken()**:
+    ```java
+    public Boolean validateToken(String token)
+    {
+      try {
+        return getClaimsFromToken(token).getExpiration().after(new Date());
+      }
+      catch(Exception e)
+      {
+        return false;
+      }
+    }
+    ```
+    - `getClaimsFromToken(token)`: Tokenin yüklerini alır ve geçerliliğini kontrol eder.
+    - `getExpiration().after(new Date())`: Tokenin geçerlilik süresinin geçerli olup olmadığını kontrol eder.
+
+  - **extractUsername()**:
+    ```java
+    public String extractUsername(String token)
+    {
+      return getClaimsFromToken(token).getSubject();
+    }
+    ```
+    - `getClaimsFromToken(token).getSubject()`: Tokenin konu bilgisini (kullanıcı adını) döner.
+
+  - **getClaimsFromToken()**:
+    ```java
+    private Claims getClaimsFromToken(String token)
+    {
+      SecretKey key = (SecretKey) getSignKey();
+      return Jwts
+              .parser()
+              .verifyWith(key)
+              .build()
+              .parseSignedClaims(token)
+              .getPayload();
+    }
+    ```
+    - `getSignKey()`: JWT'nin imzalanmasında kullanılan anahtarı alır.
+    - `Jwts.parser()`: Tokeni analiz etmek için bir parser döner.
+    - `parseSignedClaims(token)`: İmzalı tokeni çözümleyerek yükleri döner.
+
+  - **getSignKey()**:
+    ```java
+    private Key getSignKey() {
+      byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
+      return Keys.hmacShaKeyFor(keyBytes);
+    }
+    ```
+    - `Decoders.BASE64URL.decode(SECRET_KEY)`: Gizli anahtarı Base64 formatında çözümleyerek byte dizisine çevirir.
+    - `Keys.hmacShaKeyFor(keyBytes)`: HMAC SHA algoritması için bir anahtar oluşturur.
+
+---
+
+### Açıklamalar
+
+- **@Component**: Bu sınıfın bir Spring bileşeni olduğunu belirtir.
+- **@RequiredArgsConstructor**: Lombok tarafından, final alanlar için bir constructor oluşturur ve bu alanları inject eder.
+- **OncePerRequestFilter**: Her istek için bir defa çalışacak olan bir filtre sağlar.
+- **HttpServletRequest**: HTTP isteği ile ilgili bilgileri temsil eder.
+- **HttpServletResponse**: HTTP yanıtı ile ilgili bilgileri temsil eder.
+- **FilterChain**: Filtreler arasında geçiş yapmak için kullanılır.
+- **validateToken()**: JWT'nin geçerliliğini kontrol eder.
+- **UsernamePasswordAuthenticationToken**: Kullanıcı adı ve şifre ile kimlik doğrulama işlemlerini gerçekleştiren bir token.
+- **SecurityContextHolder**: Güvenlik bağlamını tutar ve yönetir.
+
+### Detaylar
+
+1. **Class Level Annotations**:
+  - `@Component`: Bu sınıfın Spring bileşeni olduğunu belirtir.
+  - `@RequiredArgsConstructor`: Lombok tarafından oluşturulan bir constructor ile final alanların inject edilmesini sağlar.
+
+2. **Fields**:
+  - `private final JwtService jwtService;`: JWT işlemleri için gerekli olan servis. JWT tokenlerini doğrulamak için kullanılır.
+
+3. **Methods**:
+  - **doFilterInternal()**:
+    ```java
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+    ```
+    - `protected void doFilterInternal(...)`: Bu metod, istek ve yanıt üzerinde işlem yapar. Her istek için bir defa çağrılır.
+
+  - **Authorization Header**:
+    ```java
+    String jwtHeader = request.getHeader("Authorization");
+    ```
+    - `request.getHeader("Authorization")`: İstekten "Authorization" başlığını alır. JWT tokeni bu başlıkta taşınır.
+
+  - **Token Extraction**:
+    ```java
+    if(jwtHeader != null) {
+      String jwt = jwtHeader.substring(7); // bearer abc
+    ```
+    - `jwtHeader.substring(7)`: "Bearer " kelimesinden sonraki kısmı alır. Bu durumda JWT tokenini elde eder.
+
+  - **Token Validation**:
+    ```java
+    Boolean isTokenValid = jwtService.validateToken(jwt);
+    ```
+    - `jwtService.validateToken(jwt)`: JWT'nin geçerliliğini kontrol eder. Eğer geçerliyse `true`, değilse `false` döner.
+
+  - **Setting Authentication**:
+    ```java
+    if(isTokenValid) {
+      UsernamePasswordAuthenticationToken token = new
+              UsernamePasswordAuthenticationToken(jwtService.extractUsername(jwt), null, null);
+    ```
+    - `UsernamePasswordAuthenticationToken`: Geçerli token için bir kimlik doğrulama tokeni oluşturur. JWT'den kullanıcı adını çıkararak ayarlar.
+
+  - **Details Setting**:
+    ```java
+    token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    ```
+    - `setDetails(...)`: İstekle ilgili detayları ayarlar.
+
+  - **Security Context Update**:
+    ```java
+    SecurityContextHolder.getContext().setAuthentication(token);
+    ```
+    - `SecurityContextHolder.getContext().setAuthentication(token)`: Güvenlik bağlamını günceller ve kullanıcıyı doğrular.
+
+  - **Chain Filter**:
+    ```java
+    filterChain.doFilter(request,response);
+    ```
+    - `filterChain.doFilter(...)`: İsteği bir sonraki filtreye veya hedefe aktarır.
+
+---
+
+### DTOs
+
+#### LoginRequest
 
 ```java
-@RestController
-@RequestMapping("/orders")
-public class OrderController {
-    @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable Long id) {
-        // Siparişi veritabanından al
-    }
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class LoginRequest
+{
+  @NotBlank
+  private String email;
+
+  @NotBlank
+  private String password;
 }
 ```
 
-### Sonuç
+#### LoginRequest Açıklamala
 
-Mikro hizmetler, büyük ölçekli ve karmaşık uygulamaların yönetimini ve bakımını kolaylaştırır. Bağımsız dağıtım ve teknoloji bağımsızlığı gibi özellikleriyle esneklik sağlar.
-
----
-
-## Monolith vs MicroService
-
-Monolitik ve mikro hizmet mimarileri arasındaki farklar ve her birinin avantajları ve dezavantajları.
-
-### Monolitik Mimari
-
-- **Avantajları**:
-  - Basitlik: Tek bir kod tabanı ve dağıtım birimi.
-  - Performans: Aynı bellek alanında çalıştıkları için düşük gecikme.
-
-- **Dezavantajları**:
-  - Esneklik: Değişiklik yapmak tüm uygulamayı etkiler.
-  - Ölçeklenebilirlik: Belli bir noktadan sonra ölçeklendirmek zorlaşır.
-
-### Mikro Hizmet Mimari
-
-- **Avantajları**:
-  - Bağımsız Dağıtım: Her hizmet bağımsız olarak dağıtılabilir.
-  - Ölçeklenebilirlik: Her hizmet bağımsız olarak ölçeklenebilir.
-  - Teknoloji Çeşitliliği: Her hizmet farklı teknolojilerle geliştirilebilir.
-
-- **Dezavantajları**:
-  - Karmaşıklık: Dağıtık sistemlerin yönetimi daha zordur.
-  - Performans: Hizmetler arası iletişim gecikmelere neden olabilir.
-
-### Sonuç
-
-Monolitik ve mikro hizmet mimarileri, farklı ihtiyaçlara ve koşullara göre avantaj ve dezavantajlara sahiptir. Uygulama gereksinimlerine göre doğru mimari seçilmelidir.
+- **@Getter**: Tüm alanlar için getter metodları oluşturur.
+- **@Setter**: Tüm alanlar için setter metodları oluşturur.
+- **@AllArgsConstructor**: Tüm alanları içeren bir constructor oluşturur.
+- **@NoArgsConstructor**: Parametresiz bir constructor oluşturur.
+- **@NotBlank**: Alanın boş olmamasını sağlar.
 
 ---
 
-## SQL
+#### CreateProductDto
 
-SQL, ilişkisel veri tabanları ile etkileşim kurmak için kullanılan bir sorgulama dilidir.
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateProductDto implements Serializable
+{
+  @NotNull
+  @NotBlank
+  private String name;
 
-### Temel SQL Komutları
+  @NotNull
+  @PositiveOrZero
+  private int stock;
 
-- **SELECT**:
+  @NotNull
+  private BigDecimal unitPrice;
 
-```sql
-SELECT * FROM users;
+  @NotNull
+  @Positive
+  private int categoryId;
+}
 ```
 
-- **INSERT**:
+#### CreateProductDto  Açıklamala
 
-```sql
-INSERT INTO users (name, email) VALUES ('John Doe', 'john@example.com');
+- **Serializable**: Bu sınıfın serileştirilmesine izin verir.
+- **@NotNull**: Alanın null olmamasını sağlar.
+- **@NotBlank**: Alanın boş olmamasını sağlar.
+- **@PositiveOrZero**: Alanın sıfır veya pozitif olmasını sağlar.
+- **@Positive**: Alanın pozitif olmasını sağlar.
+
+---
+
+#### ListProductDto
+
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ListProductDto implements Serializable
+{
+  private int id;
+  private String name;
+  private BigDecimal unitPrice;
+}
 ```
 
-- **UPDATE**:
+#### ListProductDto Açıklamala
 
-```sql
-UPDATE users SET email = 'john.doe@example.com' WHERE name = 'John Doe';
+- **Serializable**: Bu sınıfın serileştirilmesine izin verir.
+- **@Getter**: Tüm alanlar için getter metodları oluşturur.
+- **@Setter**: Tüm alanlar için setter metodları oluşturur.
+- **@NoArgsConstructor**: Parametresiz bir constructor oluşturur.
+- **@AllArgsConstructor**: Tüm alanları içeren bir constructor oluşturur.
+
+---
+
+#### CreateUserRequest
+
+```java
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateUserRequest
+{
+  @NotBlank
+  private String email;
+
+  @NotBlank
+  private String password;
+
+  @NotBlank
+  private String name;
+
+  @NotBlank
+  private String surname;
+
+  @NotBlank
+  @Size(min = 11, max = 11)
+  private String identityNo;
+}
 ```
 
-- **DELETE**:
+#### CreateUserRequest Açıklamala
 
-```sql
-DELETE FROM users WHERE name = 'John Doe';
-```
+- **@NotBlank**: Alanın boş olmamasını sağlar.
+- **@Size**: Alanın uzunluğunu belirler (bu durumda tam 11 karakter olmalıdır).
+- **@Getter**: Tüm alanlar için getter metodları oluşturur.
+- **@Setter**: Tüm alanlar için setter metodları oluşturur.
+- **@AllArgsConstructor**: Tüm alanları içeren bir constructor oluşturur.
+- **@NoArgsConstructor**: Parametresiz bir constructor oluşturur.
 
-### İlişkisel Veri Tabanı Yönetim Sistemleri (RDBMS)
-
-- **MySQL**: Açık kaynaklı ve yaygın olarak kullanılan bir RDBMS.
-- **PostgreSQL**: İleri seviye özelliklere sahip açık kaynaklı bir RDBMS.
-- **Oracle**: Kurumsal düzeyde özellikler sunan bir RDBMS.
-
-### Sonuç
-
-SQL, ilişkisel veri tabanları ile veri yönetimi ve sorgulama için temel bir araçtır. Temel SQL komutları ve RDBMS'ler, veri tabanı yönetimini ve etkileşimini sağlar.
+---
